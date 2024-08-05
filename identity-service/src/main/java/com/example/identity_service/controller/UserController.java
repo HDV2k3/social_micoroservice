@@ -1,18 +1,24 @@
 package com.example.identity_service.controller;
 
 import com.example.identity_service.dto.request.ApiResponse;
+import com.example.identity_service.dto.request.AuthenticationRequest;
 import com.example.identity_service.dto.request.UserCreationRequest;
 import com.example.identity_service.dto.request.UserUpdateRequest;
 import com.example.identity_service.dto.response.UserResponse;
 import com.example.identity_service.service.UserService;
+import com.example.identity_service.service.VerificationTokenService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -21,12 +27,50 @@ import java.util.List;
 @Slf4j
 public class UserController {
     UserService userService;
-
-    @PostMapping
+    VerificationTokenService verificationTokenService;
+    @PostMapping("/register")
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
                 .build();
+    }
+    @PostMapping("/login")
+    public ApiResponse<Map<String, String>> login(@RequestBody AuthenticationRequest request) {
+        try {
+            Map<String, String> response = userService.login(request);
+            return ApiResponse.<Map<String, String>>builder()
+                    .result(response)
+                    .build();
+        } catch (MessagingException e) {
+            return ApiResponse.<Map<String, String>>builder()
+                    .build();
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ApiResponse<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
+        Map<String, Object> response = userService.verifyEmail(token);
+        if (response.containsKey("email")) {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .result(response)
+                    .build();
+        } else {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .build();
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ApiResponse<String> resendVerification(@RequestParam("token") String token) {
+        try {
+            String message = userService.resendVerification(token);
+            return ApiResponse.<String>builder()
+                    .result(message)
+                    .build();
+        } catch (MessagingException e) {
+            return ApiResponse.<String>builder()
+                    .build();
+        }
     }
 
     @GetMapping

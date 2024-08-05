@@ -8,6 +8,7 @@ import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import com.google.common.base.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.core.env.Environment;
@@ -42,8 +43,8 @@ public class DeviceValida {
     public DeviceValida(DeviceMetadataRepository deviceMetadataRepository,
                         @Qualifier("GeoIPCity") DatabaseReader databaseReader,
                         Parser parser,
-                        JavaMailSender mailSender,
-                        Environment env
+                        JavaMailSender mailSender, Environment env
+
     ) {
         this.deviceMetadataRepository = deviceMetadataRepository;
         this.databaseReader = databaseReader;
@@ -55,13 +56,13 @@ public class DeviceValida {
         String location = getIpLocation(ipAddress);
         String deviceDetails = getDeviceDetails(userAgent);
 
-        DeviceMetadata existingDevice = findExistingDevice((String) user1.getId(), deviceDetails, location);
+        DeviceMetadata existingDevice = findExistingDevice(user1.getId(), deviceDetails, location);
 
         if (Objects.isNull(existingDevice)) {
             unknownDeviceNotification(deviceDetails, location, ipAddress, user1.getEmail());
 
             DeviceMetadata deviceMetadata = new DeviceMetadata();
-            deviceMetadata.setUserId((String) user1.getId());
+            deviceMetadata.setUserId(user1.getId());
             deviceMetadata.setLocation(location);
             deviceMetadata.setDeviceDetails(deviceDetails);
             deviceMetadata.setLastLoggedIn(new Date());
@@ -70,6 +71,31 @@ public class DeviceValida {
             existingDevice.setLastLoggedIn(new Date());
             deviceMetadataRepository.save(existingDevice);
         }
+    }
+    private String getIpLocation(String ip) throws IOException, GeoIp2Exception {
+
+        String location = UNKNOWN;
+
+        InetAddress ipAddress = InetAddress.getByName(ip);
+
+        CityResponse cityResponse = databaseReader.city(ipAddress);
+        if (Objects.nonNull(cityResponse) &&
+                Objects.nonNull(cityResponse.getCity()) &&
+                !Strings.isNullOrEmpty(cityResponse.getCity().getName())) {
+
+            location = cityResponse.getCity().getName();
+        }
+
+        return location;
+    }
+    private String getDeviceDetails(String userAgent) {
+        String deviceDetails = UNKNOWN;
+        Client client = parser.parse(userAgent);
+        if (Objects.nonNull(client)) {
+            deviceDetails = client.userAgent.family + " " + client.userAgent.major + "." + client.userAgent.minor +
+                    " - " + client.os.family + " " + client.os.major + "." + client.os.minor;
+        }
+        return deviceDetails;
     }
 
     private String extractIp(HttpServletRequest request) {
@@ -88,34 +114,7 @@ public class DeviceValida {
         return header.split(" *, *")[0];
     }
 
-    private String getDeviceDetails(String userAgent) {
-        String deviceDetails = UNKNOWN;
 
-        Client client = parser.parse(userAgent);
-        if (Objects.nonNull(client)) {
-            deviceDetails = client.userAgent.family + " " + client.userAgent.major + "." + client.userAgent.minor +
-                    " - " + client.os.family + " " + client.os.major + "." + client.os.minor;
-        }
-
-        return deviceDetails;
-    }
-
-    private String getIpLocation(String ip) throws IOException, GeoIp2Exception {
-
-        String location = UNKNOWN;
-
-        InetAddress ipAddress = InetAddress.getByName(ip);
-
-        CityResponse cityResponse = databaseReader.city(ipAddress);
-        if (Objects.nonNull(cityResponse) &&
-                Objects.nonNull(cityResponse.getCity()) &&
-                !Strings.isNullOrEmpty(cityResponse.getCity().getName())) {
-
-            location = cityResponse.getCity().getName();
-        }
-
-        return location;
-    }
 
     private DeviceMetadata findExistingDevice(String id, String deviceDetails, String location) {
 

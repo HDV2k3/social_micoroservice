@@ -1,8 +1,10 @@
 package com.example.identity_service.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
 import java.util.Objects;
@@ -10,15 +12,16 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class DeviceMetadata {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
-    private String userId;
-    private String deviceDetails;
-    private String location;
-    private Date lastLoggedIn;
+    @GeneratedValue(strategy = GenerationType.UUID)
+     String id;
+     String userId;
+     String deviceDetails;
+     String location;
+     Date lastLoggedIn;
 
 
 

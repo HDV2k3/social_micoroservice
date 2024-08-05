@@ -10,29 +10,30 @@ import com.maxmind.geoip2.DatabaseReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
 import java.util.UUID;
 @Service
 public class CheckIPService {
+    @Autowired
+    private   UserRepository userRepository;
+    @Autowired
+    private   UserLocationRepository userLocationRepository;
 
     @Autowired
-    UserRepository userRepository;
+    private   NewLocationTokenRepository newLocationTokenRepository;
 
     @Autowired
-    UserLocationRepository userLocationRepository;
-
+    private   Environment env;
     @Autowired
-    NewLocationTokenRepository newLocationTokenRepository;
-
-    @Autowired
-    private Environment env;
-
-
+    private SessionRegistry sessionRegistry;
     @Autowired
     @Qualifier("GeoIPCity")
     private DatabaseReader databaseReader;
+
+
 
     public NewLocationToken isNewLoginLocation(String email, String ip) {
 

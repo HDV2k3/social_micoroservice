@@ -43,6 +43,9 @@ public class User {
     String id;
     String email;
     String password;
+    @Column(nullable = false)
+    boolean enabled;
+    String verificationToken;
     @ManyToMany
     Set<Role> roles;
 }

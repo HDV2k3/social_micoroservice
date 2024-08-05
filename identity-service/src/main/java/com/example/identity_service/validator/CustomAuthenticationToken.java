@@ -17,11 +17,11 @@ public class CustomAuthenticationToken extends UsernamePasswordAuthenticationTok
         this.userAgent = userAgent;
     }
 
-    public CustomAuthenticationToken(Object principal, Object credentials,
-                                     Collection<? extends GrantedAuthority> authorities,
-                                     String ipAddress, String userAgent) {
-        super(principal, credentials, authorities);
-        this.ipAddress = ipAddress;
-        this.userAgent = userAgent;
-    }
+//    public CustomAuthenticationToken(Object principal, Object credentials,
+//                                     Collection<? extends GrantedAuthority> authorities,
+//                                     String ipAddress, String userAgent) {
+//        super(principal, credentials, authorities);
+//        this.ipAddress = ipAddress;
+//        this.userAgent = userAgent;
+//    }
 }

@@ -21,14 +21,14 @@ public class NewLocationToken {
     @JoinColumn(nullable = false, name = "user_location_id")
      UserLocation userLocation;
 
-    public NewLocationToken() {
-        super();
-    }
-
-    public NewLocationToken(final String token) {
-        super();
-        this.token = token;
-    }
+//    public NewLocationToken() {
+//        super();
+//    }
+//
+//    public NewLocationToken(final String token) {
+//        super();
+//        this.token = token;
+//    }
 
     public NewLocationToken(final String token, final UserLocation userLocation) {
         super();

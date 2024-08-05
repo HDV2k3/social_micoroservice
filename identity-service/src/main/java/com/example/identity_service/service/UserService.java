@@ -1,14 +1,18 @@
 package com.example.identity_service.service;
 
+import com.example.identity_service.Events.OnRegistrationCompleteEvent;
 import com.example.identity_service
 
 .constant.PredefinedRole;
+import com.example.identity_service.dto.request.AuthenticationRequest;
 import com.example.identity_service
 
 .dto.request.UserCreationRequest;
 import com.example.identity_service
 
 .dto.request.UserUpdateRequest;
+import com.example.identity_service.dto.response.PermissionResponse;
+import com.example.identity_service.dto.response.RoleResponse;
 import com.example.identity_service
 
 .dto.response.UserResponse;
@@ -39,18 +43,23 @@ import com.example.identity_service
 import com.example.identity_service
 
 .repository.httpclient.ProflieClient;
+import com.example.identity_service.validator.CustomAuthenticationToken;
+import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +73,10 @@ public class UserService {
     ProflieClient proflieClient;
     ProfileMapper profileMapper;
     CheckIPService checkIPService;
+    ApplicationEventPublisher eventPublisher;
+    VerificationTokenService validateVerificationToken;
+    EmailService emailService;
+    AuthenticationManager authenticationManager;
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) throw new AppException(ErrorCode.EMAIL_EXISTED);
 
@@ -76,16 +89,109 @@ public class UserService {
         user.setRoles(roles);
         user = userRepository.save(user);
         checkIPService.addUserLocation(user, request.getIpAddress());
+
         log.info(request.getIpAddress());
         System.out.println("ProfileMapper: " + profileMapper);
         System.out.println("Request: " + request);
         var profileRequest = profileMapper.toProfileCreationRequest(request);
         profileRequest.setUserId(user.getId());
         var profileResponse =   proflieClient.createProfile(profileRequest);
-        log.info(profileResponse.toString());
+
+        log.info("User after save: {}", user);
+        log.info("ProfileResponse: {}", profileResponse);
+
+        User savedUser = userRepository.findById(user.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        log.info("Saved User: {}", savedUser);
 
 
-        return userMapper.toUserResponse(userRepository.save(user));
+
+        Set<RoleResponse> roleResponses = savedUser.getRoles().stream().map(role -> {
+            Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
+                    .map(permission -> new PermissionResponse(permission.getName(), permission.getDescription()))
+                    .collect(Collectors.toSet());
+            return new RoleResponse(role.getName(), role.getDescription(), permissionResponses);
+        }).collect(Collectors.toSet());
+
+        UserResponse userResponse = UserResponse.builder()
+                .id(savedUser.getId())
+                .email(savedUser.getEmail())
+                .firstName(profileResponse.getFirstName())
+                .lastName(profileResponse.getLastName())
+                .dob(profileResponse.getDob())
+                .city(profileResponse.getCity())
+                .roles(roleResponses)
+                .build();
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(savedUser));
+        log.info("UserResponse: {}", userResponse);
+        return userResponse;
+    }
+    public Map<String, String> login(AuthenticationRequest request) throws MessagingException {
+        CustomAuthenticationToken authToken = new CustomAuthenticationToken(
+                request.getEmail(),
+                request.getPassword(),
+                request.getIpAddress(),
+                request.getUserAgent()
+        );
+
+        authenticationManager.authenticate(authToken);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(null);
+        Map<String, String> response = new HashMap<>();
+
+        if (!user.isEnabled()) {
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user));
+            response.put("message", "Registration successful. Please check your email to verify your account.");
+            response.put("verificationToken", user.getVerificationToken());
+        }
+        return response;
+    }
+    public String getEmailByToken(String token) {
+        User user = userRepository.findByVerificationToken(token).orElse(null);
+        if (user != null) {
+            return user.getEmail();
+        } else {
+            throw new RuntimeException("Invalid token");
+        }
+    }
+    public Map<String, Object> verifyEmail(String token) {
+        Map<String, Object> response = new HashMap<>();
+        String result = validateVerificationToken.validateVerificationToken(token);
+
+        if ("valid".equals(result)) {
+            String email = getEmailByToken(token);
+            if (email != null) {
+                response.put("email", email);
+                response.put("message", "Email verified successfully! You can now log in.");
+            } else {
+                response.put("message", "Invalid token.");
+            }
+        } else {
+            response.put("message", "Invalid or expired verification token.");
+        }
+
+        return response;
+    }
+
+    public String resendVerification(String token) throws MessagingException {
+        String email =getEmailByToken(token);
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            return "User not found";
+        }
+
+        if (user.isEnabled()) {
+            return "User is already verified";
+        }
+
+        UserResponse userResponse = getMyInfo();
+
+        if (userResponse == null) {
+            return "User not found";
+        }
+
+        String confirmationUrl = "http://localhost:3000/succes-email-verification?token=" + token;
+        emailService.sendVerificationEmail(email, confirmationUrl);
+        return "Verification email resent";
     }
 
     public UserResponse getMyInfo() {
