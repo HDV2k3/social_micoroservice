@@ -1,10 +1,8 @@
 package com.example.identity_service.validator;
 
-import lombok.Getter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 
-import java.util.Collection;
+import lombok.Getter;
 
 @Getter
 public class CustomAuthenticationToken extends UsernamePasswordAuthenticationToken {
@@ -17,11 +15,11 @@ public class CustomAuthenticationToken extends UsernamePasswordAuthenticationTok
         this.userAgent = userAgent;
     }
 
-//    public CustomAuthenticationToken(Object principal, Object credentials,
-//                                     Collection<? extends GrantedAuthority> authorities,
-//                                     String ipAddress, String userAgent) {
-//        super(principal, credentials, authorities);
-//        this.ipAddress = ipAddress;
-//        this.userAgent = userAgent;
-//    }
+    //    public CustomAuthenticationToken(Object principal, Object credentials,
+    //                                     Collection<? extends GrantedAuthority> authorities,
+    //                                     String ipAddress, String userAgent) {
+    //        super(principal, credentials, authorities);
+    //        this.ipAddress = ipAddress;
+    //        this.userAgent = userAgent;
+    //    }
 }

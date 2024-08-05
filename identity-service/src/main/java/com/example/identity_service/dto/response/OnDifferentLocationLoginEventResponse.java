@@ -1,9 +1,13 @@
 package com.example.identity_service.dto.response;
 
-import com.example.identity_service.entity.NewLocationToken;
-import lombok.Getter;
-import org.springframework.context.ApplicationEvent;
 import java.util.Locale;
+
+import org.springframework.context.ApplicationEvent;
+
+import com.example.identity_service.entity.NewLocationToken;
+
+import lombok.Getter;
+
 @Getter
 @SuppressWarnings("serial")
 public class OnDifferentLocationLoginEventResponse extends ApplicationEvent {
@@ -16,7 +20,8 @@ public class OnDifferentLocationLoginEventResponse extends ApplicationEvent {
 
     //
 
-    public OnDifferentLocationLoginEventResponse(Locale locale, String email, String ip, NewLocationToken token, String appUrl) {
+    public OnDifferentLocationLoginEventResponse(
+            Locale locale, String email, String ip, NewLocationToken token, String appUrl) {
         super(token);
         this.locale = locale;
         this.email = email;
@@ -24,5 +29,4 @@ public class OnDifferentLocationLoginEventResponse extends ApplicationEvent {
         this.token = token;
         this.appUrl = appUrl;
     }
-
 }

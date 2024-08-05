@@ -1,11 +1,5 @@
 package com.example.identity_service.validator;
 
-
-import com.example.identity_service.dto.response.OnDifferentLocationLoginEventResponse;
-import com.example.identity_service.entity.NewLocationToken;
-import com.example.identity_service.exception.UnusualLocationException;
-import com.example.identity_service.service.CheckIPService;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +7,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.stereotype.Component;
+
+import com.example.identity_service.dto.response.OnDifferentLocationLoginEventResponse;
+import com.example.identity_service.entity.NewLocationToken;
+import com.example.identity_service.exception.UnusualLocationException;
+import com.example.identity_service.service.CheckIPService;
 
 @Component
 public class DifferentLocationChecker implements UserDetailsChecker {
@@ -31,8 +30,10 @@ public class DifferentLocationChecker implements UserDetailsChecker {
         final String ip = getClientIP();
         final NewLocationToken token = checkIPService.isNewLoginLocation(userDetails.getUsername(), ip);
         if (token != null) {
-            final String appUrl = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
-            eventPublisher.publishEvent(new OnDifferentLocationLoginEventResponse(request.getLocale(), userDetails.getUsername(), ip, token, appUrl));
+            final String appUrl =
+                    "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+            eventPublisher.publishEvent(new OnDifferentLocationLoginEventResponse(
+                    request.getLocale(), userDetails.getUsername(), ip, token, appUrl));
             throw new UnusualLocationException("unusual location");
         }
     }
@@ -44,5 +45,4 @@ public class DifferentLocationChecker implements UserDetailsChecker {
         }
         return xfHeader.split(",")[0];
     }
-
 }

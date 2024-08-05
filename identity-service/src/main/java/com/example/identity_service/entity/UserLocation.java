@@ -1,16 +1,16 @@
-//package com.example.identity_service.entity;
+// package com.example.identity_service.entity;
 //
-//import jakarta.persistence.*;
-//import lombok.*;
-//import lombok.experimental.FieldDefaults;
+// import jakarta.persistence.*;
+// import lombok.*;
+// import lombok.experimental.FieldDefaults;
 //
-//@Setter
-//@Getter
-//@Builder
-//@AllArgsConstructor
-//@FieldDefaults(level = AccessLevel.PRIVATE)
-//@Entity
-//public class UserLocation {
+// @Setter
+// @Getter
+// @Builder
+// @AllArgsConstructor
+// @FieldDefaults(level = AccessLevel.PRIVATE)
+// @Entity
+// public class UserLocation {
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.AUTO)
 //    String id;
@@ -22,17 +22,17 @@
 //    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
 //    @JoinColumn(nullable = false, name = "id")
 //     User user;
-//public UserLocation() {
+// public UserLocation() {
 //    super();
 //    enabled = false;
-//}
+// }
 //
-//public UserLocation(String country, User user) {
+// public UserLocation(String country, User user) {
 //    super();
 //    this.country = country;
 //    this.user = user;
 //    enabled = false;
-//}
+// }
 //
 //
 //    @Override
@@ -90,10 +90,11 @@
 //        return "UserLocation [id=" + id + ", country=" + country + ", enabled=" + enabled + ", user=" + user + "]";
 //    }
 //
-//}
+// }
 package com.example.identity_service.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -110,13 +111,13 @@ public class UserLocation {
     String id;
 
     String country;
+
     @Column(nullable = false)
     boolean enabled;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     User user;
-
 
     public UserLocation(String country, User user) {
         this.country = country;

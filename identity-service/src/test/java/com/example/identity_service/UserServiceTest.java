@@ -1,27 +1,27 @@
-//package com.example.identity_service;
+// package com.example.identity_service;
 //
 //
 //
-//import com.example.identity_service.entity.User;
-//import com.example.identity_service.entity.UserLocation;
-//import com.example.identity_service.repository.UserLocationRepository;
-//import com.example.identity_service.service.CheckIPService;
+// import com.example.identity_service.entity.User;
+// import com.example.identity_service.entity.UserLocation;
+// import com.example.identity_service.repository.UserLocationRepository;
+// import com.example.identity_service.service.CheckIPService;
 //
-//import com.maxmind.geoip2.DatabaseReader;
-//import com.maxmind.geoip2.exception.AddressNotFoundException;
-//import com.maxmind.geoip2.exception.GeoIp2Exception;
-//import org.junit.jupiter.api.Test;
-//import java.io.IOException;
-//import java.net.InetAddress;
-//import static org.mockito.Mockito.*;
+// import com.maxmind.geoip2.DatabaseReader;
+// import com.maxmind.geoip2.exception.AddressNotFoundException;
+// import com.maxmind.geoip2.exception.GeoIp2Exception;
+// import org.junit.jupiter.api.Test;
+// import java.io.IOException;
+// import java.net.InetAddress;
+// import static org.mockito.Mockito.*;
 //
-//import org.junit.runner.RunWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.MockitoJUnitRunner;
+// import org.junit.runner.RunWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.MockitoJUnitRunner;
 //
-//@RunWith(MockitoJUnitRunner.class)
-//public class UserServiceTest {
+// @RunWith(MockitoJUnitRunner.class)
+// public class UserServiceTest {
 //
 //    @Mock
 //    private DatabaseReader mockDatabaseReader;
@@ -54,17 +54,15 @@
 //        // Verify that save method was not called
 //        verify(mockUserLocationRepository, never()).save(any(UserLocation.class));
 //    }
-//}
+// }
 package com.example.identity_service;
 
-import com.example.identity_service.entity.User;
-import com.example.identity_service.entity.UserLocation;
-import com.example.identity_service.repository.UserLocationRepository;
-import com.example.identity_service.service.CheckIPService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import com.maxmind.geoip2.DatabaseReader;
-import com.maxmind.geoip2.exception.AddressNotFoundException;
-import com.maxmind.geoip2.exception.GeoIp2Exception;
+import java.io.IOException;
+import java.net.InetAddress;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -72,10 +70,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-import java.io.IOException;
-import java.net.InetAddress;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+
+import com.example.identity_service.entity.User;
+import com.example.identity_service.entity.UserLocation;
+import com.example.identity_service.repository.UserLocationRepository;
+import com.example.identity_service.service.CheckIPService;
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.exception.AddressNotFoundException;
+import com.maxmind.geoip2.exception.GeoIp2Exception;
+
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
 

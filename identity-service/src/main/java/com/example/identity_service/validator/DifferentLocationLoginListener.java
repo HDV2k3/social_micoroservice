@@ -1,9 +1,7 @@
 package com.example.identity_service.validator;
 
-
 import java.util.Date;
 
-import com.example.identity_service.dto.response.OnDifferentLocationLoginEventResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
@@ -11,6 +9,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+
+import com.example.identity_service.dto.response.OnDifferentLocationLoginEventResponse;
 
 @Component
 public class DifferentLocationLoginListener implements ApplicationListener<OnDifferentLocationLoginEventResponse> {
@@ -23,16 +23,24 @@ public class DifferentLocationLoginListener implements ApplicationListener<OnDif
 
     @Autowired
     private Environment env;
+
     @Override
     public void onApplicationEvent(final OnDifferentLocationLoginEventResponse event) {
-        final String enableLocUri = event.getAppUrl() + "/user/enableNewLoc?token=" + event.getToken()
-                .getToken();
+        final String enableLocUri = event.getAppUrl() + "/user/enableNewLoc?token="
+                + event.getToken().getToken();
         final String changePassUri = event.getAppUrl() + "/changePassword.html";
         final String recipientAddress = event.getEmail();
         final String subject = "Login attempt from different location";
-        final String message = messages.getMessage("message.differentLocation", new Object[] { new Date().toString(), event.getToken()
-                .getUserLocation()
-                .getCountry(), event.getIp(), enableLocUri, changePassUri }, event.getLocale());
+        final String message = messages.getMessage(
+                "message.differentLocation",
+                new Object[] {
+                    new Date().toString(),
+                    event.getToken().getUserLocation().getCountry(),
+                    event.getIp(),
+                    enableLocUri,
+                    changePassUri
+                },
+                event.getLocale());
 
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientAddress);

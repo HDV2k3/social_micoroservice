@@ -1,10 +1,10 @@
 package com.example.identity_service.dto.response;
 
-import com.example.identity_service.entity.Permission;
+import java.util.Set;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
 @Getter
 @Setter
 @Data

@@ -1,8 +1,8 @@
 package com.example.identity_service.exception;
 
-import org.springframework.security.core.AuthenticationException;
-
 import java.io.Serial;
+
+import org.springframework.security.core.AuthenticationException;
 
 public final class UnusualLocationException extends AuthenticationException {
 
@@ -12,5 +12,4 @@ public final class UnusualLocationException extends AuthenticationException {
     public UnusualLocationException(final String message) {
         super(message);
     }
-
 }

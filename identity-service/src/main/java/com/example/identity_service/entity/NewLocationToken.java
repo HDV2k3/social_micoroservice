@@ -1,6 +1,7 @@
 package com.example.identity_service.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,20 +16,20 @@ public class NewLocationToken {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-     String token;
+    String token;
 
     @OneToOne(targetEntity = UserLocation.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_location_id")
-     UserLocation userLocation;
+    UserLocation userLocation;
 
-//    public NewLocationToken() {
-//        super();
-//    }
-//
-//    public NewLocationToken(final String token) {
-//        super();
-//        this.token = token;
-//    }
+    //    public NewLocationToken() {
+    //        super();
+    //    }
+    //
+    //    public NewLocationToken(final String token) {
+    //        super();
+    //        this.token = token;
+    //    }
 
     public NewLocationToken(final String token, final UserLocation userLocation) {
         super();
@@ -44,7 +45,8 @@ public class NewLocationToken {
         int result = 1;
         result = (prime * result) + ((getId() == null) ? 0 : getId().hashCode());
         result = (prime * result) + ((getToken() == null) ? 0 : getToken().hashCode());
-        result = (prime * result) + ((getUserLocation() == null) ? 0 : getUserLocation().hashCode());
+        result = (prime * result)
+                + ((getUserLocation() == null) ? 0 : getUserLocation().hashCode());
         return result;
     }
 
@@ -88,5 +90,4 @@ public class NewLocationToken {
     public String toString() {
         return "NewLocationToken [id=" + id + ", token=" + token + ", userLocation=" + userLocation + "]";
     }
-
 }

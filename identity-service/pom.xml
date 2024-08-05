@@ -157,6 +157,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>mysql</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
@@ -250,10 +256,13 @@
 				</executions>
 				<configuration>
 					<excludes>
-						<exclude>com/devteria/identity/dto/**</exclude>
-						<exclude>com/devteria/identity/entity/**</exclude>
-						<exclude>com/devteria/identity/mapper/**</exclude>
-						<exclude>com/devteria/identity/configuration/**</exclude>
+						<exclude>com/example/identity_service/dto/**</exclude>
+						<exclude>com/example/identity_service/entity/**</exclude>
+						<exclude>com/example/identity_service/mapper/**</exclude>
+						<exclude>com/example/identity_service/configuration/**</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>src/main/resources/maxmind/GeoLite2-City.mmdb</exclude>
+						<exclude>src/main/resources/maxmind/GeoLite2-Country.mmdb</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -282,10 +291,11 @@
 					<execution>
 						<phase>compile</phase>
 						<goals>
-							<goal>apply</goal>
+							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>
+
 			</plugin>
 		</plugins>
 	</build>

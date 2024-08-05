@@ -1,20 +1,16 @@
 package com.example.identity_service.Events;
 
+import java.util.UUID;
 
-
-import com.example.identity_service.dto.response.UserProfileReponse;
-import com.example.identity_service.dto.response.UserResponse;
-import com.example.identity_service.entity.User;
-import com.example.identity_service.service.EmailService;
-import com.example.identity_service.service.VerificationTokenService;
 import jakarta.mail.MessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
-
+import com.example.identity_service.entity.User;
+import com.example.identity_service.service.EmailService;
+import com.example.identity_service.service.VerificationTokenService;
 
 @Component
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {

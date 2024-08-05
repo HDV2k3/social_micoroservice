@@ -2,8 +2,8 @@ package com.example.identity_service.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -59,7 +59,7 @@ public class EmailService {
 
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(htmlContent, true);  // Set to true to indicate the content is HTML
+        helper.setText(htmlContent, true); // Set to true to indicate the content is HTML
 
         mailSender.send(message);
     }

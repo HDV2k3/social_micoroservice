@@ -1,12 +1,9 @@
 package com.example.identity_service.configuration;
 
-import com.example.identity_service
+import java.text.ParseException;
+import java.util.Objects;
+import javax.crypto.spec.SecretKeySpec;
 
-.dto.request.IntrospectRequest;
-import com.example.identity_service
-
-.service.AuthenticationService;
-import com.nimbusds.jose.JOSEException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,9 +12,9 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.text.ParseException;
-import java.util.Objects;
+import com.example.identity_service.dto.request.IntrospectRequest;
+import com.example.identity_service.service.AuthenticationService;
+import com.nimbusds.jose.JOSEException;
 
 @Component
 public class CustomJwtDecoder implements JwtDecoder {

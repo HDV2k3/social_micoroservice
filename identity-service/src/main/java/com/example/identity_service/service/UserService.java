@@ -1,65 +1,40 @@
 package com.example.identity_service.service;
 
-import com.example.identity_service.Events.OnRegistrationCompleteEvent;
-import com.example.identity_service
+import java.util.*;
+import java.util.stream.Collectors;
 
-.constant.PredefinedRole;
-import com.example.identity_service.dto.request.AuthenticationRequest;
-import com.example.identity_service
-
-.dto.request.UserCreationRequest;
-import com.example.identity_service
-
-.dto.request.UserUpdateRequest;
-import com.example.identity_service.dto.response.PermissionResponse;
-import com.example.identity_service.dto.response.RoleResponse;
-import com.example.identity_service
-
-.dto.response.UserResponse;
-import com.example.identity_service
-
-.entity.Role;
-import com.example.identity_service
-
-.entity.User;
-import com.example.identity_service
-
-.exception.AppException;
-import com.example.identity_service
-
-.exception.ErrorCode;
-import com.example.identity_service
-
-.mapper.ProfileMapper;
-import com.example.identity_service
-
-.mapper.UserMapper;
-import com.example.identity_service
-
-.repository.RoleRepository;
-import com.example.identity_service
-
-.repository.UserRepository;
-import com.example.identity_service
-
-.repository.httpclient.ProflieClient;
-import com.example.identity_service.validator.CustomAuthenticationToken;
 import jakarta.mail.MessagingException;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.example.identity_service.Events.OnRegistrationCompleteEvent;
+import com.example.identity_service.constant.PredefinedRole;
+import com.example.identity_service.dto.request.AuthenticationRequest;
+import com.example.identity_service.dto.request.UserCreationRequest;
+import com.example.identity_service.dto.request.UserUpdateRequest;
+import com.example.identity_service.dto.response.PermissionResponse;
+import com.example.identity_service.dto.response.RoleResponse;
+import com.example.identity_service.dto.response.UserResponse;
+import com.example.identity_service.entity.Role;
+import com.example.identity_service.entity.User;
+import com.example.identity_service.exception.AppException;
+import com.example.identity_service.exception.ErrorCode;
+import com.example.identity_service.mapper.ProfileMapper;
+import com.example.identity_service.mapper.UserMapper;
+import com.example.identity_service.repository.RoleRepository;
+import com.example.identity_service.repository.UserRepository;
+import com.example.identity_service.repository.httpclient.ProflieClient;
+import com.example.identity_service.validator.CustomAuthenticationToken;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +52,7 @@ public class UserService {
     VerificationTokenService validateVerificationToken;
     EmailService emailService;
     AuthenticationManager authenticationManager;
+
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) throw new AppException(ErrorCode.EMAIL_EXISTED);
 
@@ -95,22 +71,24 @@ public class UserService {
         System.out.println("Request: " + request);
         var profileRequest = profileMapper.toProfileCreationRequest(request);
         profileRequest.setUserId(user.getId());
-        var profileResponse =   proflieClient.createProfile(profileRequest);
+        var profileResponse = proflieClient.createProfile(profileRequest);
 
         log.info("User after save: {}", user);
         log.info("ProfileResponse: {}", profileResponse);
 
-        User savedUser = userRepository.findById(user.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User savedUser =
+                userRepository.findById(user.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         log.info("Saved User: {}", savedUser);
 
-
-
-        Set<RoleResponse> roleResponses = savedUser.getRoles().stream().map(role -> {
-            Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
-                    .map(permission -> new PermissionResponse(permission.getName(), permission.getDescription()))
-                    .collect(Collectors.toSet());
-            return new RoleResponse(role.getName(), role.getDescription(), permissionResponses);
-        }).collect(Collectors.toSet());
+        Set<RoleResponse> roleResponses = savedUser.getRoles().stream()
+                .map(role -> {
+                    Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
+                            .map(permission ->
+                                    new PermissionResponse(permission.getName(), permission.getDescription()))
+                            .collect(Collectors.toSet());
+                    return new RoleResponse(role.getName(), role.getDescription(), permissionResponses);
+                })
+                .collect(Collectors.toSet());
 
         UserResponse userResponse = UserResponse.builder()
                 .id(savedUser.getId())
@@ -125,13 +103,10 @@ public class UserService {
         log.info("UserResponse: {}", userResponse);
         return userResponse;
     }
+
     public Map<String, String> login(AuthenticationRequest request) throws MessagingException {
         CustomAuthenticationToken authToken = new CustomAuthenticationToken(
-                request.getEmail(),
-                request.getPassword(),
-                request.getIpAddress(),
-                request.getUserAgent()
-        );
+                request.getEmail(), request.getPassword(), request.getIpAddress(), request.getUserAgent());
 
         authenticationManager.authenticate(authToken);
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(null);
@@ -144,6 +119,7 @@ public class UserService {
         }
         return response;
     }
+
     public String getEmailByToken(String token) {
         User user = userRepository.findByVerificationToken(token).orElse(null);
         if (user != null) {
@@ -152,6 +128,7 @@ public class UserService {
             throw new RuntimeException("Invalid token");
         }
     }
+
     public Map<String, Object> verifyEmail(String token) {
         Map<String, Object> response = new HashMap<>();
         String result = validateVerificationToken.validateVerificationToken(token);
@@ -172,7 +149,7 @@ public class UserService {
     }
 
     public String resendVerification(String token) throws MessagingException {
-        String email =getEmailByToken(token);
+        String email = getEmailByToken(token);
         User user = userRepository.findByEmail(email).orElse(null);
 
         if (user == null) {

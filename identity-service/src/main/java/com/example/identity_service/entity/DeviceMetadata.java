@@ -1,13 +1,14 @@
 package com.example.identity_service.entity;
 
+import java.util.Date;
+import java.util.Objects;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Date;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -17,24 +18,23 @@ public class DeviceMetadata {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-     String id;
-     String userId;
-     String deviceDetails;
-     String location;
-     Date lastLoggedIn;
+    String id;
 
-
+    String userId;
+    String deviceDetails;
+    String location;
+    Date lastLoggedIn;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DeviceMetadata that = (DeviceMetadata) o;
-        return Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getUserId(), that.getUserId()) &&
-                Objects.equals(getDeviceDetails(), that.getDeviceDetails()) &&
-                Objects.equals(getLocation(), that.getLocation()) &&
-                Objects.equals(getLastLoggedIn(), that.getLastLoggedIn());
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(getUserId(), that.getUserId())
+                && Objects.equals(getDeviceDetails(), that.getDeviceDetails())
+                && Objects.equals(getLocation(), that.getLocation())
+                && Objects.equals(getLastLoggedIn(), that.getLastLoggedIn());
     }
 
     @Override

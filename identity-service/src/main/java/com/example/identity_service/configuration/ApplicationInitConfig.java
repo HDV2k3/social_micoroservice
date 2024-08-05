@@ -1,34 +1,23 @@
-package com.example.identity_service.configuration;//package com.example.identity_service.configuration;
+package com.example.identity_service.configuration;
 
-import com.example.identity_service
+import java.util.HashSet;
 
-.constant.PredefinedRole;
-import com.example.identity_service
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-.entity.Role;
-import com.example.identity_service
+import com.example.identity_service.constant.PredefinedRole;
+import com.example.identity_service.entity.Role;
+import com.example.identity_service.entity.User;
+import com.example.identity_service.repository.RoleRepository;
+import com.example.identity_service.repository.UserRepository;
 
-.entity.User;
-import com.example.identity_service
-
-.repository.RoleRepository;
-import com.example.identity_service
-
-.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.HashSet;
-
-
 
 @Configuration
 @RequiredArgsConstructor
@@ -44,63 +33,28 @@ public class ApplicationInitConfig {
     @NonFinal
     static final String ADMIN_PASSWORD = "admin";
 
-//    @Bean
-//    @ConditionalOnProperty(
-//            prefix = "spring",
-//            value = "datasource.driverClassName",
-//            havingValue = "com.mysql.cj.jdbc.Driver")
-//    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
-//        log.info("Initializing application.....");
-//        return  args -> {
-//            if (userRepository.findByEmail(ADMIN_EMAIL).isEmpty())
-//            {
-//                roleRepository.save(Role.builder()
-//                        .name(PredefinedRole.USER_ROLE)
-//                        .description("USER ROLE")
-//                        .build());
-//                Role adminRole = roleRepository.save(Role.builder()
-//                        .name(PredefinedRole.ADMIN_ROLE)
-//                        .description("ADMIN ROLE")
-//                        .build());
-//                var roles = new HashSet<Role>();
-//                roles.add(adminRole);
-//                User user = new User();
-//                user.setEmail(ADMIN_EMAIL);
-//                user.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
-//                user.setRoles(roles);
-//                userRepository.save(user);
-//                log.warn("admin user has been created with default password: admin, please change it");
-//            }
-//        };
-//    }
-@Bean
-ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository)
-{
-    log.info("Initializing application.....");
-    return  args -> {
-        if (userRepository.findByEmail(ADMIN_EMAIL).isEmpty())
-        {
-            roleRepository.save(Role.builder()
-                    .name(PredefinedRole.USER_ROLE)
-                    .description("USER ROLE")
-                    .build());
-            Role adminRole = roleRepository.save(Role.builder()
-                    .name(PredefinedRole.ADMIN_ROLE)
-                    .description("ADMIN ROLE")
-                    .build());
-            var roles = new HashSet<Role>();
-            roles.add(adminRole);
-            User user = new User();
-            user.setEmail(ADMIN_EMAIL);
-            user.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
-            user.setRoles(roles);
-            userRepository.save(user);
-            log.warn("admin user has been created with default password: admin, please change it");
-        }
-    };
+    @Bean
+    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
+        log.info("Initializing application.....");
+        return args -> {
+            if (userRepository.findByEmail(ADMIN_EMAIL).isEmpty()) {
+                roleRepository.save(Role.builder()
+                        .name(PredefinedRole.USER_ROLE)
+                        .description("USER ROLE")
+                        .build());
+                Role adminRole = roleRepository.save(Role.builder()
+                        .name(PredefinedRole.ADMIN_ROLE)
+                        .description("ADMIN ROLE")
+                        .build());
+                var roles = new HashSet<Role>();
+                roles.add(adminRole);
+                User user = new User();
+                user.setEmail(ADMIN_EMAIL);
+                user.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
+                user.setRoles(roles);
+                userRepository.save(user);
+                log.warn("admin user has been created with default password: admin, please change it");
+            }
+        };
+    }
 }
-}
-
-
-
-

@@ -1,9 +1,10 @@
 package com.example.identity_service.service;
 
-import com.example.identity_service.entity.User;
-import com.example.identity_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.identity_service.entity.User;
+import com.example.identity_service.repository.UserRepository;
 
 @Service
 public class VerificationTokenService {
@@ -26,5 +27,4 @@ public class VerificationTokenService {
         userRepository.save(user);
         return "valid";
     }
-
 }
