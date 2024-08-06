@@ -38,7 +38,7 @@ import com.maxmind.geoip2.exception.GeoIp2Exception;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/users/**", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+        "/users/register", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
 
     private final CustomJwtDecoder customJwtDecoder;
