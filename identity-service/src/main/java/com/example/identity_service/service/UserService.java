@@ -3,6 +3,7 @@ package com.example.identity_service.service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.example.identity_service.repository.httpclient.ProfileClient;
 import jakarta.mail.MessagingException;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,7 +29,7 @@ import com.example.identity_service.mapper.ProfileMapper;
 import com.example.identity_service.mapper.UserMapper;
 import com.example.identity_service.repository.RoleRepository;
 import com.example.identity_service.repository.UserRepository;
-import com.example.identity_service.repository.httpclient.ProflieClient;
+
 import com.example.identity_service.validator.CustomAuthenticationToken;
 
 import lombok.AccessLevel;
@@ -45,7 +46,7 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
-    ProflieClient proflieClient;
+    ProfileClient profileClient;
     ProfileMapper profileMapper;
     CheckIPService checkIPService;
     ApplicationEventPublisher eventPublisher;
@@ -71,7 +72,7 @@ public class UserService {
         System.out.println("Request: " + request);
         var profileRequest = profileMapper.toProfileCreationRequest(request);
         profileRequest.setUserId(user.getId());
-        var profileResponse = proflieClient.createProfile(profileRequest);
+        var profileResponse = profileClient.createProfile(profileRequest);
 
         log.info("User after save: {}", user);
         log.info("ProfileResponse: {}", profileResponse);
@@ -89,7 +90,7 @@ public class UserService {
                     return new RoleResponse(role.getName(), role.getDescription(), permissionResponses);
                 })
                 .collect(Collectors.toSet());
-
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(savedUser));
         UserResponse userResponse = UserResponse.builder()
                 .id(savedUser.getId())
                 .email(savedUser.getEmail())
@@ -98,8 +99,8 @@ public class UserService {
                 .dob(profileResponse.getDob())
                 .city(profileResponse.getCity())
                 .roles(roleResponses)
+                .tokenVerification(savedUser.getVerificationToken())
                 .build();
-        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(savedUser));
         log.info("UserResponse: {}", userResponse);
         return userResponse;
     }

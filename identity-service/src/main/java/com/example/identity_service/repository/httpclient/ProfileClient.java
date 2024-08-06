@@ -9,7 +9,7 @@ import com.example.identity_service.dto.request.ProfileCreationRequest;
 import com.example.identity_service.dto.response.UserProfileReponse;
 
 @FeignClient(name = "profile-service", url = "http://localhost:8081/profile")
-public interface ProflieClient {
-    @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+public interface ProfileClient {
+    @PostMapping(value = "/internal/users", produces = MediaType.APPLICATION_JSON_VALUE)
     UserProfileReponse createProfile(@RequestBody ProfileCreationRequest request);
 }
