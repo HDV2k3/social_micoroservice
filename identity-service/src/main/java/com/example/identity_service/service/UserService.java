@@ -36,6 +36,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 @RequiredArgsConstructor
@@ -66,21 +68,18 @@ public class UserService {
         user.setRoles(roles);
         user = userRepository.save(user);
         checkIPService.addUserLocation(user, request.getIpAddress());
-
-        log.info(request.getIpAddress());
         System.out.println("ProfileMapper: " + profileMapper);
         System.out.println("Request: " + request);
         var profileRequest = profileMapper.toProfileCreationRequest(request);
         profileRequest.setUserId(user.getId());
+
+
         var profileResponse = profileClient.createProfile(profileRequest);
 
         log.info("User after save: {}", user);
         log.info("ProfileResponse: {}", profileResponse);
-
         User savedUser =
                 userRepository.findById(user.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        log.info("Saved User: {}", savedUser);
-
         Set<RoleResponse> roleResponses = savedUser.getRoles().stream()
                 .map(role -> {
                     Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
@@ -94,9 +93,7 @@ public class UserService {
         UserResponse userResponse = UserResponse.builder()
                 .id(savedUser.getId())
                 .email(savedUser.getEmail())
-
                 .roles(roleResponses)
-
                 .build();
         log.info("UserResponse: {}", userResponse);
         return userResponse;

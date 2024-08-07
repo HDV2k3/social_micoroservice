@@ -15,5 +15,4 @@ public class UserResponse {
     String id;
     String email;
     Set<RoleResponse> roles;
-
 }
