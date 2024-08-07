@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,7 +37,13 @@ import com.maxmind.geoip2.exception.GeoIp2Exception;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/users/register", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+            "/users/register",
+            "/auth/token",
+            "/auth/introspect",
+            "/auth/logout",
+            "/auth/refresh",
+            "users/verify-email",
+            "users/resend-verification"
     };
 
     private final CustomJwtDecoder customJwtDecoder;
@@ -52,21 +57,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                // Allow public access to specified endpoints for both GET and POST requests
-                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, "/users/**")
-                        .permitAll() // Permit GET requests to /verify-email
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                        .permitAll() // Permit POST requests to PUBLIC_ENDPOINTS
-                        .anyRequest()
-                        .authenticated()) // Require authentication for all other requests
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                                .decoder(customJwtDecoder)
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(
-                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
+
+        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(customJwtDecoder)
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+        httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
     }
@@ -125,30 +125,3 @@ public class SecurityConfig {
         return new SessionRegistryImpl();
     }
 }
-
-//    @Bean(name = "GeoIPCountry")
-//    public DatabaseReader databaseReader() throws IOException, GeoIp2Exception {
-//        final File resource = new File(
-//
-// Objects.requireNonNull(this.getClass().getClassLoader().getResource("maxmind/GeoLite2-Country.mmdb"))
-//                        .getFile());
-//        return new DatabaseReader.Builder(resource).build();
-//    }
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.authorizeHttpRequests(request ->
-//
-//                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-//                .permitAll()
-//                .anyRequest()
-//                .authenticated());
-//
-//        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-//                        .decoder(customJwtDecoder)
-//                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-//                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
-//        httpSecurity.csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(sessionManagement -> sessionManagement
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//        return httpSecurity.build();
-//    }
