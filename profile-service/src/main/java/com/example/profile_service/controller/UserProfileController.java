@@ -1,6 +1,4 @@
 package com.example.profile_service.controller;
-
-import com.example.profile_service.dto.request.ProfileCreationRequest;
 import com.example.profile_service.dto.response.UserProfileReponse;
 import com.example.profile_service.service.UserProfileService;
 import lombok.AccessLevel;
