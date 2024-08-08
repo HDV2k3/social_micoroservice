@@ -1,7 +1,4 @@
-package com.example.identity_service.dto.response;
-
-
-import java.util.Set;
+package com.example.notification_service.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -11,9 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    String id;
+public class Recipient {
+    String name;
     String email;
-
-    Set<RoleResponse> roles;
 }

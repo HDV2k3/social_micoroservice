@@ -69,17 +69,10 @@ public class CheckIPService {
         try {
             // Check if the IP address is localhost (IPv4 or IPv6)
             InetAddress ipAddress = InetAddress.getByName(ip);
-            final String country =
-                    databaseReader.country(ipAddress).getCountry().getName();
-
-            //            UserLocation loc = new UserLocation(country, user);
-            //            loc.setId("9600b7fd-9f98-446b-9a62-593090ec84cd");
-            //            loc.setEnabled(true);
-            //            userLocationRepository.save(loc);
+            final String country = databaseReader.country(ipAddress).getCountry().getName();
             userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
             UserLocation loc = new UserLocation(country, user);
             loc.setEnabled(true);
-            //            loc.setId("9600b7fd-9f98-446b-9a62-593090ec84cd");
             userLocationRepository.save(loc);
 
         } catch (final Exception e) {

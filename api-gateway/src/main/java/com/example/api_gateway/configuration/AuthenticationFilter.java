@@ -37,8 +37,10 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @NonFinal // chi dinh khong la final neu duoc khai bao final
             String[] publicEndpoints = {
             "/identity/auth/.*",
-            "/identity/users/register"};
-
+            "/identity/users/register",
+            "/identity/users/verify-email",
+            "/identity/users/resend-verification",
+            "/notification/email/send"};
     @Value("${app.api-prefix}")
     @NonFinal
     private String apiPrefix;
@@ -66,7 +68,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             } else
                 return unauthenticated(exchange.getResponse());
         }).onErrorResume(_ -> unauthenticated(exchange.getResponse()));
-
     }
 
     @Override
