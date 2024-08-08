@@ -1,9 +1,8 @@
-package com.example.identity_service.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+package com.example.notification_service.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 @Getter
 public enum ErrorCode {
@@ -17,9 +16,7 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     USER_NOT_FOUND(1008, "User not found ", HttpStatus.NOT_FOUND),
-    VALID(200, "valid ", HttpStatus.OK),
-    IS_ENABLED(1008, "is enabled verify  ", HttpStatus.NOT_FOUND),
-    SEND_EMAIL_ERROR(1111, "System Error Please Waiting...  ", HttpStatus.INTERNAL_SERVER_ERROR),
+    CANNOT_SEND_EMAIL(1009, "Can not send email ", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

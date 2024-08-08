@@ -45,7 +45,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/verify-email")
+    @PostMapping("/verify-email")
     public ApiResponse<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
         Map<String, Object> response = userService.verifyEmail(token);
         if (response.containsKey("email")) {
@@ -57,12 +57,8 @@ public class UserController {
 
     @PostMapping("/resend-verification")
     public ApiResponse<String> resendVerification(@RequestParam("token") String token) {
-        try {
-            String message = userService.resendVerification(token);
-            return ApiResponse.<String>builder().result(message).build();
-        } catch (MessagingException e) {
-            return ApiResponse.<String>builder().build();
-        }
+        String message = userService.resendVerification(token);
+        return ApiResponse.<String>builder().result(message).build();
     }
 
     @GetMapping
