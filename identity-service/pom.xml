@@ -14,7 +14,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<description>Identity service</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>22</java.version>
 		<projectlombok-lombok.version>1.18.30</projectlombok-lombok.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
@@ -27,6 +27,16 @@
 			<groupId>com.github.ua-parser</groupId>
 			<artifactId>uap-java</artifactId>
 			<version>1.6.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>3.6.2</version> <!-- Use the appropriate version -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

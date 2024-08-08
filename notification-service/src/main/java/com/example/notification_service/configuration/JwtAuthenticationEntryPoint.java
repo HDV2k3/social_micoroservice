@@ -1,13 +1,17 @@
-package com.example.identity_service.configuration;
-import java.io.IOException;
+package com.example.notification_service.configuration;
+
+
+
+import com.example.notification_service.dto.ApiResponse;
+import com.example.notification_service.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import com.example.identity_service.dto.request.ApiResponse;
-import com.example.identity_service.exception.ErrorCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
@@ -23,7 +27,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .build();
+
         ObjectMapper objectMapper = new ObjectMapper();
+
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         response.flushBuffer();
     }
