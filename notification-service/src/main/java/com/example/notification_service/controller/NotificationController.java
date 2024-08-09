@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class NotificationController {
-
     EmailServiceKafka emailServiceKafka;
     @KafkaListener(topics = "notification-delivery",groupId = "notification-verify-group")
     public void listenNotificationDelivery(NotificationEvent message){
