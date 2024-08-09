@@ -2,10 +2,7 @@ package com.example.profile_service.entity;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Id;
-import org.springframework.data.neo4j.core.schema.Node;
-import org.springframework.data.neo4j.core.schema.Property;
+import org.springframework.data.neo4j.core.schema.*;
 import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 import java.time.LocalDate;
@@ -27,4 +24,18 @@ public class UserProfile {
     String lastName;
     LocalDate dob;
     String city;
+    String address;
+    String number;
+
+    @Relationship(type = "HAS_AVATAR")
+    Avatar avatar;
+
+    @Relationship(type = "HAS_COVER_IMAGE")
+    CoverImage coverImage;
+
+    @Relationship(type = "HAS_EDUCATION")
+    Education education;
+
+    @Relationship(type = "HAS_INTRODUCTION")
+    Introduction introduction;
 }

@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.identity_service.dto.request.ProfileCreationRequest;
-import com.example.identity_service.dto.response.UserProfileReponse;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
         name = "profile-service",
@@ -16,5 +14,5 @@ import org.springframework.web.bind.annotation.RequestHeader;
         configuration = {AuthenticationRequestInterceptor.class})
 public interface ProfileClient {
     @PostMapping(value = "/internal/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    UserProfileReponse createProfile(@RequestBody ProfileCreationRequest request);
+    void createProfile(@RequestBody ProfileCreationRequest request);
 }

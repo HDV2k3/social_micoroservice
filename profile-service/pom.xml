@@ -26,6 +26,11 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>8.1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
@@ -62,6 +67,15 @@
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -138,6 +152,13 @@
 						<exclude>com/example/profile_service/entity/**</exclude>
 						<exclude>com/example/profile_service/mapper/**</exclude>
 						<exclude>com/example/profile_service/configuration/**</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>src/main/resources/chatappjava-a7ee2-firebase-adminsdk-aqeah-d133e3e853.json</exclude>
+						<resources>
+							<resource>
+								<directory>src/main/resources</directory>
+							</resource>
+						</resources>
 					</excludes>
 				</configuration>
 			</plugin>
