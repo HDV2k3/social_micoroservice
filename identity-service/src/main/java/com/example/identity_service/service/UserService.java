@@ -103,6 +103,13 @@ public class UserService {
         user.setRoles(roles);
         // generate token email for verification
         String  token  =  tokenService.createVerificationToken(user);
+
+        // luu user
+        user = userRepository.save(user);
+        // luu country cua user
+        checkIPService.addUserLocation(user, request.getIpAddress());
+        // giao tiep voi profile-service khoi tao profile  cho user voi data tu request
+        createProfileForUser(user,request);
         // url templateCode = "http://localhost/3000:...... + token
         // send email verify cho user dang ky moi
         try {
@@ -111,21 +118,10 @@ public class UserService {
         } catch (Exception e) {
             // Log the error
             log.error("Failed to send verification email to {}: {}", request.getEmail(), e.getMessage());
-
-            // Optionally, handle any rollback or cleanup if necessary
-            // For example, you might want to delete the user from the repository
-            // userRepository.delete(user);
-
+             userRepository.delete(user);
             // Throw a custom exception or a general runtime exception to indicate failure
             throw new AppException(ErrorCode.SEND_EMAIL_ERROR);
         }
-        // luu user
-        user = userRepository.save(user);
-        // luu country cua user
-        checkIPService.addUserLocation(user, request.getIpAddress());
-        // giao tiep voi profile-service khoi tao profile  cho user voi data tu request
-        createProfileForUser(user,request);
-
         // data tra ve
         return apiUserResponse(user);
     }

@@ -17,6 +17,9 @@ public enum ErrorCode {
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     USER_NOT_FOUND(1008, "User not found ", HttpStatus.NOT_FOUND),
     ID_NOT_FOUND(1008, "ID User not found ", HttpStatus.NOT_FOUND),
+    IMAGE_NOT_FOUND(1123,"Image from firebase not found",HttpStatus.NOT_FOUND),
+    PROFILE_NOT_FOUND(1123,"Profile not found",HttpStatus.NOT_FOUND),
+    FILE_UPLOAD_ERROR(1333,"Failed to upload avatar",HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
