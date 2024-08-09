@@ -1,3 +1,13 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+/api-gateway/src/main/resources/*
+/identity-service/src/main/resources/*
+/notification-service/src/main/resources/*
+/profile-service/src/main/resources/*
+/src/main/resources/*
+api-gateway/src/main/resources/*
+identity-service/src/main/resources/*
+notification-service/src/main/resources/*
+profile-service/src/main/resources/*
+src/main/resources/*
