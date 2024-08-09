@@ -35,7 +35,6 @@ public class CustomJwtDecoder implements JwtDecoder {
 
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
-
             return new Jwt(
                     token,
                     signedJWT.getJWTClaimsSet().getIssueTime().toInstant(),
@@ -46,25 +45,5 @@ public class CustomJwtDecoder implements JwtDecoder {
         } catch (ParseException e) {
             throw new JwtException("Invalid Token");
         }
-
-
     }
 }
-//        try {
-//            var response = authenticationService.introspect(
-//                    IntrospectRequest.builder().token(token).build());
-//
-//            if (!response.isValid()) throw new JwtException("Token invalid");
-//        } catch (JOSEException | ParseException e) {
-//            throw new JwtException(e.getMessage());
-//        }
-//
-//        if (Objects.isNull(nimbusJwtDecoder)) {
-//            SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-//            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
-//                    .macAlgorithm(MacAlgorithm.HS512)
-//                    .build();
-//        }
-//
-//        return nimbusJwtDecoder.decode(token);
-//    }
