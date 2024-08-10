@@ -1,0 +1,12 @@
+# Default ignored files
+/shelf/
+api-gateway/src/main/resources/*
+identity-service/src/main/resources/*
+notification-service/src/main/resources/*
+profile-service/src/main/resources/*
+post-service/src/main/resources/*
+profile-service/src/main/resources/application.properties
+api-gateway/src/main/resources/application.properties
+notification-service/src/main/resources/application.properties
+post-service/src/main/resources/application.properties
+profile-service/src/main/resources/chatappjava-a7ee2-firebase-adminsdk-aqeah-d133e3e853.json

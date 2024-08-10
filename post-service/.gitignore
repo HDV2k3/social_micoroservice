@@ -1,0 +1,43 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+api-gateway/src/main/resources/*
+identity-service/src/main/resources/*
+notification-service/src/main/resources/*
+profile-service/src/main/resources/*
+post-service/src/main/resources/*
+profile-service/src/main/resources/application.properties
+api-gateway/src/main/resources/application.properties
+notification-service/src/main/resources/application.properties
+post-service/src/main/resources/application.properties
+profile-service/src/main/resources/chatappjava-a7ee2-firebase-adminsdk-aqeah-d133e3e853.json
