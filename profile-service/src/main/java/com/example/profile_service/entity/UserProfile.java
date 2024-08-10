@@ -6,6 +6,8 @@ import org.springframework.data.neo4j.core.schema.*;
 import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -38,4 +40,11 @@ public class UserProfile {
 
     @Relationship(type = "HAS_INTRODUCTION")
     Introduction introduction;
+    // has_.. profile nay co...
+    //INVOLVES profile nay bao gom voi user...
+    @Relationship(type = "HAS_SKILL")
+    Skill skill;
+    // Relationship to the projects this user is involved in
+    @Relationship(type = "INVOLVES", direction = Relationship.Direction.INCOMING)
+    Set<Project> projects = new HashSet<>();
 }
