@@ -40,11 +40,12 @@ public class UserProfile {
 
     @Relationship(type = "HAS_INTRODUCTION")
     Introduction introduction;
-    // has_.. profile nay co...
-    //INVOLVES profile nay bao gom voi user...
+
     @Relationship(type = "HAS_SKILL")
-    Skill skill;
+    Set<Skill> skills = new HashSet<>();
     // Relationship to the projects this user is involved in
     @Relationship(type = "INVOLVES", direction = Relationship.Direction.INCOMING)
     Set<Project> projects = new HashSet<>();
+    // has_.. profile nay co...
+    //INVOLVES profile nay bao gom voi user...
 }
