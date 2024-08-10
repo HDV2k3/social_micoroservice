@@ -97,29 +97,43 @@ public class UserProfileService {
     }
     public EducationResponse createEducation(EducationRequest request,String profileId)
     {
-        findUserProfileById(profileId);
+        UserProfile userProfile = findUserProfileById(profileId);
+
         Education education = educationMapper.toEducationProfile(request);
+        userProfile.setEducation(education);
+        userProfileRepository.save(userProfile);
         education = educationRepository.save(education);
         return educationMapper.toEducationProfileResponse(education);
     }
 
     public IntroductionResponse createIntroduction(IntroductionRequest request,String profileId)
     {
-        findUserProfileById(profileId);
+        UserProfile userProfile = findUserProfileById(profileId);
         Introduction introduction = introductionMapper.toProfileIntroduction(request);
+        userProfile.setIntroduction(introduction);
+        userProfileRepository.save(userProfile);
         introduction = introductionRepository.save(introduction);
         return  introductionMapper.toProfileIntroductionResponse(introduction);
     }
     public SkillResponse createSkill(SkillRequest request,String profileId)
     {
-        findUserProfileById(profileId);
+        UserProfile userProfile = findUserProfileById(profileId);
         Skill skill = skillMapper.toSkillProfile(request);
+        // Thêm kỹ năng vào tập hợp kỹ năng của UserProfile
+        userProfile.getSkills().add(skill);
+        // Lưu UserProfile và tạo mối quan hệ HAS_SKILL
+        userProfileRepository.save(userProfile);
+
         skill =skillRepository.save(skill);
-        return skillMapper.toSkillProfileResponse(skill);
+        // Tạo SkillResponse và trả về
+        return SkillResponse.builder()
+                .id(skill.getId())
+                .skill(skill.getSkill())
+                .ProfileId(userProfile.getId()) // Đặt ProfileId
+                .build();
     }
-    public ProjectResponse createProject(ProjectRequest request,String profileId)
-    {
-        findUserProfileById(profileId);
+    public ProjectResponse createProject(ProjectRequest request, String profileId) {
+        // Tạo một Project từ request
         Project project = projectMapper.toProfileProject(request);
 
         // Duyệt qua danh sách participantIds để tìm và thêm UserProfile vào project
@@ -128,10 +142,22 @@ public class UserProfileService {
                         .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)))
                 .collect(Collectors.toSet());
 
+        // Cập nhật mối quan hệ giữa Project và các UserProfile
         project.setParticipants(participants);
+
+        // Cập nhật các UserProfile để thiết lập mối quan hệ INVOLVES với Project
+        for (UserProfile participant : participants) {
+            participant.getProjects().add(project);
+            userProfileRepository.save(participant);  // Lưu lại UserProfile với mối quan hệ mới
+        }
+
+        // Lưu Project vào cơ sở dữ liệu
         project = projectRepository.save(project);
-        return  projectMapper.toProfileProjectResponse(project);
+
+        // Chuyển đổi Project thành ProjectResponse và trả về
+        return projectMapper.toProfileProjectResponse(project);
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserProfileResponse> getAllProfiles() {
         List<UserProfile> userProfiles = userProfileRepository.findAll();

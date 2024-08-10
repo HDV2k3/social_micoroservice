@@ -14,4 +14,5 @@ public class SkillResponse {
     String title="Skill";
     String id;
     List<String> skill;
+    String ProfileId;
 }
