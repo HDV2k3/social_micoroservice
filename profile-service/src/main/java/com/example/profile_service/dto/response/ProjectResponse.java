@@ -4,20 +4,21 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-
+import java.util.Set;
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EducationResponse {
+public class ProjectResponse {
     String id;
-    String nameSchool;
-    String degree;
+    String projectName;
+    String description;
+    boolean currently;
     LocalDate start;
     LocalDate end;
-    String fieldOfStudy;
-    String gpa;
-    String activitiesAndSocieties;
-    String description;
+    String MediaLink;
+    Set<UserProfileResponse> participants; // Detailed information about participants
 }
+
+

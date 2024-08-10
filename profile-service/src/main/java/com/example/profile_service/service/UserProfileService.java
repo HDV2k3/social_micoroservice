@@ -1,23 +1,13 @@
 package com.example.profile_service.service;
 
 import com.example.profile_service.contants.URL_BUCKET_NAME;
-import com.example.profile_service.dto.request.EducationRequest;
-import com.example.profile_service.dto.request.IntroductionRequest;
-import com.example.profile_service
-
-.dto.request.ProfileCreationRequest;
-import com.example.profile_service.dto.response.EducationResponse;
-import com.example.profile_service.dto.response.IntroductionResponse;
-import com.example.profile_service.dto.response.UserProfileResponse;
+import com.example.profile_service.dto.request.*;
+import com.example.profile_service.dto.response.*;
 import com.example.profile_service.entity.*;
 import com.example.profile_service.exception.AppException;
 import com.example.profile_service.exception.ErrorCode;
 import com.example.profile_service.mapper.*;
-import com.example.profile_service.repository.EducationRepository;
-import com.example.profile_service.repository.IntroductionRepository;
-import com.example.profile_service
-
-.repository.UserProfileRepository;
+import com.example.profile_service.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +34,11 @@ public class UserProfileService {
     CoverImageMapper coverImageMapper;
     EducationMapper educationMapper;
     IntroductionMapper introductionMapper;
+    SkillMapper skillMapper;
+    SkillRepository skillRepository;
     IntroductionRepository introductionRepository;
+    ProjectMapper projectMapper;
+    ProjectRepository projectRepository;
     public UserProfileResponse createProfile(ProfileCreationRequest request) {
         UserProfile userProfile = userProfileMapper.toUserProfile(request);
         userProfile = userProfileRepository.save(userProfile);
@@ -52,15 +47,18 @@ public class UserProfileService {
 
     public UserProfileResponse getProfile(String id) {
         UserProfile userProfile =
-                userProfileRepository.findById(id) .orElseThrow(() -> new AppException(ErrorCode.ID_NOT_FOUND));
+                userProfileRepository.findById(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
         return userProfileMapper.toUserProfileResponse(userProfile);
     }
-
-    public void uploadAvatarProfile(String userId, MultipartFile file) throws IOException {
-        // Find the user profile
-        UserProfile userProfile = userProfileRepository
-                .findById(userId)
+    // Method to find a user profile by ID
+    private UserProfile findUserProfileById(String profileId) {
+        return userProfileRepository
+                .findById(profileId)
                 .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+    }
+    public AvatarProfileResponse uploadAvatarProfile(String profileId, MultipartFile file) throws IOException {
+        // Find the user profile
+        UserProfile userProfile = findUserProfileById(profileId);
 
         // Upload the avatar to Firebase and get the URL
         String imageUrl = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.AVATAR_FOLDER, file);
@@ -78,12 +76,10 @@ public class UserProfileService {
         userProfileRepository.save(userProfile);
 
         // Use the mapper to convert the Avatar entity to AvatarProfileResponse DTO
-        avatarMapper.toAvatarProfileResponse(avatar);
+       return avatarMapper.toAvatarProfileResponse(avatar);
     }
-    public void uploadCoverImageProfile(String profileId, MultipartFile file) throws IOException {
-        UserProfile userProfile = userProfileRepository
-                .findById(profileId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+    public CoverImageResponse uploadCoverImageProfile(String profileId, MultipartFile file) throws IOException {
+        UserProfile userProfile = findUserProfileById(profileId);
 
         String imageUrl = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.COVER_IMAGE_FOLDER, file);
 
@@ -96,13 +92,12 @@ public class UserProfileService {
 
         userProfileRepository.save(userProfile);
 
-        coverImageMapper.toCoverImageProfileResponse(coverImage);
+       return coverImageMapper.toCoverImageProfileResponse(coverImage);
+
     }
     public EducationResponse createEducation(EducationRequest request,String profileId)
     {
-                userProfileRepository
-                .findById(profileId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        findUserProfileById(profileId);
         Education education = educationMapper.toEducationProfile(request);
         education = educationRepository.save(education);
         return educationMapper.toEducationProfileResponse(education);
@@ -110,12 +105,32 @@ public class UserProfileService {
 
     public IntroductionResponse createIntroduction(IntroductionRequest request,String profileId)
     {
-        userProfileRepository
-                .findById(profileId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        findUserProfileById(profileId);
         Introduction introduction = introductionMapper.toProfileIntroduction(request);
         introduction = introductionRepository.save(introduction);
         return  introductionMapper.toProfileIntroductionResponse(introduction);
+    }
+    public SkillResponse createSkill(SkillRequest request,String profileId)
+    {
+        findUserProfileById(profileId);
+        Skill skill = skillMapper.toSkillProfile(request);
+        skill =skillRepository.save(skill);
+        return skillMapper.toSkillProfileResponse(skill);
+    }
+    public ProjectResponse createProject(ProjectRequest request,String profileId)
+    {
+        findUserProfileById(profileId);
+        Project project = projectMapper.toProfileProject(request);
+
+        // Duyệt qua danh sách participantIds để tìm và thêm UserProfile vào project
+        Set<UserProfile> participants = request.getParticipantIds().stream()
+                .map(userId -> userProfileRepository.findById(userId)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)))
+                .collect(Collectors.toSet());
+
+        project.setParticipants(participants);
+        project = projectRepository.save(project);
+        return  projectMapper.toProfileProjectResponse(project);
     }
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserProfileResponse> getAllProfiles() {
