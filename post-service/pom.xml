@@ -8,8 +8,8 @@
 		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.devteria</groupId>
-	<artifactId>notification-service</artifactId>
+	<groupId>com.example</groupId>
+	<artifactId>post-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>post-service</name>
 	<description>Post service</description>
@@ -139,10 +139,10 @@
 				</executions>
 				<configuration>
 					<excludes>
-						<exclude>com/example/post/dto/**</exclude>
-						<exclude>com/example/post/entity/**</exclude>
-						<exclude>com/example/post/mapper/**</exclude>
-						<exclude>com/example/post/configuration/**</exclude>
+						<exclude>com/example/post_service/dto/**</exclude>
+						<exclude>com/example/post_service/entity/**</exclude>
+						<exclude>com/example/post_service/mapper/**</exclude>
+						<exclude>com/example/post_service/configuration/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
