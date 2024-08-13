@@ -8,7 +8,7 @@
 		<version>3.3.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.devteria</groupId>
+	<groupId>com.example</groupId>
 	<artifactId>identity-service</artifactId>
 	<name>identity-service</name>
 	<version>0.0.1-SNAPSHOT</version>
