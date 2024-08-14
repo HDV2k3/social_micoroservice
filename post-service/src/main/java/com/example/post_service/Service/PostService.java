@@ -3,8 +3,6 @@ package com.example.post_service.Service;
 import com.example.post_service.Dto.Request.PostRequest;
 import com.example.post_service.Dto.Response.PostResponse;
 import com.example.post_service.Entity.Post;
-import com.example.post_service.Exception.AppException;
-import com.example.post_service.Exception.ErrorCode;
 import com.example.post_service.Mapper.PostMapper;
 import com.example.post_service.Repository.PostRepository;
 import com.example.post_service.Utils.JwtUtils;
@@ -12,15 +10,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,7 +33,6 @@ public class PostService {
         postRepository.save(post);
         return postMapper.toPostResponse(post);
     }
-
     public List<PostResponse> getMyPosts() {
         String userId = JwtUtils.getCurrentUserId();
         return postRepository.findUserById(userId).stream()
