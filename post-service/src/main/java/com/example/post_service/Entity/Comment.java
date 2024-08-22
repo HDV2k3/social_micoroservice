@@ -22,4 +22,5 @@ public class Comment {
     String content;
     Instant createDate;
     Instant modifiedDate;
+    CommentImage commentImage;
 }

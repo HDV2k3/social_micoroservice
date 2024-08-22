@@ -24,6 +24,7 @@ public class Post {
     String content;
     Instant createDate;
     Instant modifiedDate;
+    PostImage postImage;
     Long likeCount;   // Số lượng likes
     Long shareCount;  // Số lượng shares
     Long commentCount; // Số lượng comments

@@ -8,10 +8,7 @@ import com.example.post_service.Dto.Response.CommentResponse;
 import com.example.post_service.Dto.Response.PostResponse;
 import com.example.post_service.Dto.Response.ShareResponse;
 import com.example.post_service.Dto.Response.UserProfileResponse;
-import com.example.post_service.Entity.Comment;
-import com.example.post_service.Entity.Like;
-import com.example.post_service.Entity.Post;
-import com.example.post_service.Entity.Share;
+import com.example.post_service.Entity.*;
 import com.example.post_service.Exception.AppException;
 import com.example.post_service.Exception.ErrorCode;
 import com.example.post_service.Mapper.PostMapper;
@@ -22,6 +19,7 @@ import com.example.post_service.Repository.PostRepository;
 import com.example.post_service.Repository.ShareRepository;
 import com.example.post_service.Repository.httpclient.ProfileClient;
 import com.example.post_service.Utils.JwtUtils;
+import com.example.post_service.contants.URL_BUCKET_NAME;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,7 +29,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +52,7 @@ public class PostService {
     ShareRepository shareRepository;
     ProfileClient profileClient;
     ShareMapper shareMapper;
-
+    FirebaseStorageService firebaseStorageService;
     public PageResponse<UserProfileResponse> getUserProfilesWhoLikedPost(String postId, int page, int size) {
         List<String> userIds = likeRepository.findByPostId(postId)
                 .stream()
@@ -195,48 +195,77 @@ public class PostService {
         }
     }
 
-    public void commentOnPost(String postId, CommentRequest request) {
+    public void commentOnPost(String postId, CommentRequest request,List<MultipartFile> files) throws IOException {
         String userId = JwtUtils.getCurrentUserId();
 
         Optional<Post> post = postRepository.findById(postId);
         if (post.isEmpty()) {
             throw new AppException(ErrorCode.ID_NOT_FOUND); // Post not found
         }
+        CommentImage commentImage = null;
+        if (files != null && !files.isEmpty()) {
+            MultipartFile file = files.getFirst();
+            String storedFileName = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.COMMENT_FOLDER, file);
+            commentImage = CommentImage.builder()
+                    .name(file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown")
+                    .type(file.getContentType() != null ? file.getContentType() : "unknown")
+                    .urlImagePost(storedFileName)
+                    .build();
+        }
         Comment comment = Comment.builder()
                 .postId(postId)
                 .userId(userId)
                 .content(request.getContent())
+                .commentImage(commentImage)
                 .createDate(Instant.now())
                 .modifiedDate(Instant.now())
                 .build();
         commentRepository.save(comment);
     }
 
-    public PostResponse createPost(PostRequest request) {
-        String userId = JwtUtils.getCurrentUserId();
-        Post post = Post.builder()
-                .content(request.getContent())
-                .userId(userId)
-                .createDate(Instant.now())
-                .modifiedDate(Instant.now())
+//    public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
+//        String userId = JwtUtils.getCurrentUserId();
+//        Post post = Post.builder()
+//                .content(request.getContent())
+//                .userId(userId)
+//                .createDate(Instant.now())
+//                .modifiedDate(Instant.now())
+//                .build();
+//        postRepository.save(post);
+//        return postMapper.toPostResponse(post);
+//    }
+public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
+    String userId = JwtUtils.getCurrentUserId();
+
+    // Create a PostImage object if files are provided
+    PostImage postImage = null;
+    if (files != null && !files.isEmpty()) {
+        MultipartFile file = files.getFirst();
+        String storedFileName = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.POST_FOLDER, file);
+        postImage = PostImage.builder()
+                .name(file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown")
+                .type(file.getContentType() != null ? file.getContentType() : "unknown")
+                .urlImagePost(storedFileName)
                 .build();
-        postRepository.save(post);
-        return postMapper.toPostResponse(post);
     }
 
-    //    public void sharePost(String postId) {
-//        String userId = JwtUtils.getCurrentUserId();
-//        Optional<Post> post = postRepository.findById(postId);
-//        if (post.isEmpty()) {
-//            throw new AppException(ErrorCode.ID_NOT_FOUND); // Post not found
-//        }
-//        Share share = Share.builder()
-//                .postId(postId)
-//                .userId(userId)
-//                .sharedAt(Instant.now())
-//                .build();
-//        shareRepository.save(share);
-//    }
+    Post post = Post.builder()
+            .content(request.getContent())
+            .userId(userId)
+            .createDate(Instant.now())
+            .modifiedDate(Instant.now())
+            .postImage(postImage) // Set the image
+            .likeCount(0L)
+            .shareCount(0L)
+            .commentCount(0L)
+            .build();
+
+    postRepository.save(post);
+    return postMapper.toPostResponse(post);
+}
+
+
+
     public ShareResponse sharePost(String postId) {
         String userId = JwtUtils.getCurrentUserId();
 
@@ -273,7 +302,6 @@ public class PostService {
         // Convert Share entity to ShareResponse DTO
         return shareMapper.toShareResponse(share);
     }
-
 
 
     public long getLikeCount(String postId) {
