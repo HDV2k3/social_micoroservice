@@ -25,7 +25,9 @@ public class Connect {
 
     // ID of the user who is being followed
     String followingId;
-
+    String firstName;
+    String lastName;
+    String avatar;
     // Timestamp when the follow request was made
     Instant followedAt;
 

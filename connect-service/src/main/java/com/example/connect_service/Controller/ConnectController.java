@@ -36,10 +36,17 @@ public class ConnectController {
                 .build();
     }
 
-    @GetMapping("/lists")
+    @GetMapping("/lists-request-connect")
     ApiResponse<List<ConnectResponse>> myConnects() {
         return ApiResponse.<List<ConnectResponse>>builder()
                 .result(connectService.getMyConnects())
+                .build();
+    }
+
+    @PostMapping("/{connectId}/accept")
+    ApiResponse<ConnectResponse> acceptConnectRequest(@PathVariable String connectId) {
+        return ApiResponse.<ConnectResponse>builder()
+                .result(connectService.acceptConnectRequest(connectId))
                 .build();
     }
 }

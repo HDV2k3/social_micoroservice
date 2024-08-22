@@ -30,6 +30,12 @@ public class UserProfileController {
         return userProfileService.getProfile(profileId);
     }
 
+    @GetMapping("/users/userId/{userId}")
+   ApiResponse<UserProfileResponse> getProfileByUserId(@PathVariable String userId) {
+        return ApiResponse.<UserProfileResponse>builder()
+                .result( userProfileService.getProfileByUserId(userId))
+                .build();
+    }
     // API trả về thông tin nhiều người dùng dựa trên danh sách userIds
     @GetMapping("/users")
     ApiResponse<PageResponse<UserProfileResponse>> getProfiles

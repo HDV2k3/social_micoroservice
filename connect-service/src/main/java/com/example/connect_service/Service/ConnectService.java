@@ -1,13 +1,16 @@
 package com.example.connect_service.Service;
 
+import com.example.connect_service.Dto.ApiResponse;
 import com.example.connect_service.Dto.Request.ConnectRequest;
 import com.example.connect_service.Dto.Response.ConnectResponse;
+import com.example.connect_service.Dto.Response.UserProfileResponse;
 import com.example.connect_service.Entity.Connect;
 import com.example.connect_service.Entity.Enum.ConnectStatus;
 import com.example.connect_service.Exception.AppException;
 import com.example.connect_service.Exception.ErrorCode;
 import com.example.connect_service.Mapper.ConnectMapper;
 import com.example.connect_service.Repository.ConnectRepository;
+import com.example.connect_service.Repository.httpclient.ProfileClient;
 import com.example.connect_service.Utils.JwtUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -26,34 +30,40 @@ public class ConnectService {
 
     ConnectRepository connectRepository;
     ConnectMapper connectMapper;
+    ProfileClient profileClient;
     // Kiểm tra xem userId có đang follow followingId hay không
     public boolean existingConnect(String userId, String followingId) {
         return connectRepository.findByUser_IdAndFollowing_Id(userId, followingId).isPresent();
     }
 
-    // Tạo kết nối follow
-    public ConnectResponse createConnect(ConnectRequest request) {
-        String userIdA = JwtUtils.getCurrentUserId();
+public ConnectResponse createConnect(ConnectRequest request) {
+    String userIdA = JwtUtils.getCurrentUserId();
 
-        // Kiểm tra nếu đã có kết nối tồn tại
-        if (existingConnect(userIdA, request.getFollowingId())) {
-            throw new AppException(ErrorCode.ALREADY_EXISTS);
-        }
-
-        // Tạo đối tượng Connect mới
-        Connect newConnect = Connect.builder()
-                .followerId(userIdA)
-                .followingId(request.getFollowingId())
-                .followedAt(Instant.now())
-                .status(ConnectStatus.PENDING)
-                .build();
-
-        // Lưu đối tượng Connect vào cơ sở dữ liệu
-        Connect savedConnect = connectRepository.save(newConnect);
-
-        // Trả về phản hồi thành công
-        return connectMapper.toConnectCreateResponse(savedConnect);
+    // Check if the connection already exists
+    if (existingConnect(userIdA, request.getFollowingId())) {
+        throw new AppException(ErrorCode.ALREADY_EXISTS);
     }
+
+    // Fetch User A's profile information using ProfileClient
+    UserProfileResponse userProfile = profileClient.getProfile(userIdA);
+
+    // Create and save the Connect object with profile information
+    Connect newConnect = Connect.builder()
+            .followerId(userIdA)
+            .followingId(request.getFollowingId())
+            .followedAt(Instant.now())
+            .status(ConnectStatus.PENDING)
+            .firstName(userProfile.getFirstName())
+            .lastName(userProfile.getLastName())
+            .avatar(userProfile.getAvatar())  // Assuming UserProfileResponse has an avatar field
+            .build();
+
+    Connect savedConnect = connectRepository.save(newConnect);
+
+    // Return a successful response
+    return connectMapper.toConnectCreateResponse(savedConnect);
+}
+
     // Cập nhật trạng thái kết nối
     public ConnectResponse updateConnectStatus(String connectId, ConnectStatus newStatus) {
         Connect connect = connectRepository.findById(connectId)
@@ -72,4 +82,26 @@ public class ConnectService {
                 .map(connectMapper::toConnectCreateResponse)
                 .toList();
     }
+    public ConnectResponse acceptConnectRequest(String connectId) {
+        // Retrieve the connection request by ID
+        Connect connect = connectRepository.findById(connectId)
+                .orElseThrow(() -> new AppException(ErrorCode.ID_NOT_FOUND));
+
+        // Check if the current user is the intended recipient of the connection request
+        String userId = JwtUtils.getCurrentUserId();
+        if (!connect.getFollowingId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // Update the status to ACCEPTED
+        connect.setStatus(ConnectStatus.ACCEPTED);
+        connect.setAcceptedAt(Instant.now());  // Optional: Track when the request was accepted
+
+        // Save the updated connection
+        Connect updatedConnect = connectRepository.save(connect);
+
+        // Return the updated connection response
+        return connectMapper.toConnectCreateResponse(updatedConnect);
+    }
+
 }

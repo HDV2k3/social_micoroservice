@@ -57,6 +57,11 @@ public class UserProfileService {
                 userProfileRepository.findById(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
         return userProfileMapper.toUserProfileResponse(userProfile);
     }
+    public UserProfileResponse getProfileByUserId(String id) {
+        UserProfile userProfile =
+                userProfileRepository.findUserByUserId(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        return userProfileMapper.toUserProfileResponse(userProfile);
+    }
     // Trả về thông tin người dùng dựa trên danh sách userIds
     // Trong ProfileService
     public PageResponse<UserProfileResponse> getProfiles( int page, int size) {
