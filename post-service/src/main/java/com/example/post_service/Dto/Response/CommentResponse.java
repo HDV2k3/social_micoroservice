@@ -1,20 +1,22 @@
-package com.example.profile_service.dto.response;
+package com.example.post_service.Dto.Response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserProfileResponse {
+public class CommentResponse {
     String id;
+    String postId;   // ID của bài viết được comment
     String userId;
     String firstName;
     String lastName;
-    LocalDate dob;
-    String city;
+    String content;
+    Instant createDate;
+    Instant modifiedDate;
 }

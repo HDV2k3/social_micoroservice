@@ -141,8 +141,8 @@ public class UserService {
         if (!user.isEnabled()) {
             // send email khi user do da dang ky nhung chua verify
             String  token  =  tokenService.createVerificationToken(user);
-            // url templateCode = "http://localhost/3000:...... + token
-            emailService.sendVerificationEmailUnEnable(request,token);
+            String confirmationUrl = "http://localhost:3000/succes-email-verification?token=" + token;
+            emailService.sendVerificationEmailUnEnable(request,confirmationUrl);
             response.put("message", "Registration successful. Please check your email to verify your account.");
             response.put("verificationToken", user.getVerificationToken());
         }

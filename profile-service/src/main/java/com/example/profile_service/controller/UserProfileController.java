@@ -1,5 +1,6 @@
 package com.example.profile_service.controller;
 
+import com.example.profile_service.dto.PageResponse;
 import com.example.profile_service.dto.request.*;
 import com.example.profile_service.dto.response.*;
 import com.example.profile_service.service.UserProfileService;
@@ -29,12 +30,17 @@ public class UserProfileController {
         return userProfileService.getProfile(profileId);
     }
 
+    // API trả về thông tin nhiều người dùng dựa trên danh sách userIds
     @GetMapping("/users")
-    List<UserProfileResponse> getProfiles() {
-        return userProfileService.getAllProfiles();
+    ApiResponse<PageResponse<UserProfileResponse>> getProfiles
+    (@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+     @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<UserProfileResponse>>builder()
+                .result(userProfileService.getProfiles(page, size))
+                .build();
     }
 
-    @PostMapping("/users/{userId}/avatar")
+    @PostMapping("/users/{profileId}/avatar")
     public ResponseEntity<ApiResponse<Void>> uploadAvatarProfile(
             @PathVariable String userId,
             @RequestParam("file") MultipartFile file) {

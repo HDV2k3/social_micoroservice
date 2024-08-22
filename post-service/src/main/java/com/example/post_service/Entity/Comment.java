@@ -1,30 +1,25 @@
 package com.example.post_service.Entity;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
-import java.lang.annotation.Documented;
 import java.time.Instant;
-import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Document(value = "post")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Post {
+@Document(value = "comments")
+public class Comment {
     @MongoId
     String id;
+    String postId;   // ID của bài viết được comment
     String userId;
     String content;
     Instant createDate;
     Instant modifiedDate;
-    Long likeCount;   // Số lượng likes
-    Long shareCount;  // Số lượng shares
-    Long commentCount; // Số lượng comments
 }

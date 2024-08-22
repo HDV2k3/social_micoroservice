@@ -80,16 +80,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EmailService {
+
     KafkaTemplate<String, Object> kafkaTemplate;
     public void sendVerificationEmail(UserCreationRequest request, String urlEmailToken) {
         NotificationEvent notificationEvent = buildEmailNotification(request, urlEmailToken);
         kafkaTemplate.send("notification-delivery", notificationEvent);
     }
+
     public void sendVerificationEmailUnEnable(AuthenticationRequest request, String urlEmailToken) {
         NotificationEvent notificationEvent = buildEmailNotificationUnEnable(request, urlEmailToken);
         kafkaTemplate.send("notification-delivery", notificationEvent);
     }
-
     public void resendVerificationEmailUnEnable(String email, String token) {
         String verificationUrl = "http://localhost:3000/success-email-verification?token=" + token;
         String body = buildVerificationEmailBody(email,verificationUrl);

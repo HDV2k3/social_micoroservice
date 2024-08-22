@@ -1,6 +1,8 @@
 package com.example.profile_service.service;
 
+import com.example.profile_service.Utils.JwtUtils;
 import com.example.profile_service.contants.URL_BUCKET_NAME;
+import com.example.profile_service.dto.PageResponse;
 import com.example.profile_service.dto.request.*;
 import com.example.profile_service.dto.response.*;
 import com.example.profile_service.entity.*;
@@ -12,11 +14,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +56,21 @@ public class UserProfileService {
         UserProfile userProfile =
                 userProfileRepository.findById(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
         return userProfileMapper.toUserProfileResponse(userProfile);
+    }
+    // Trả về thông tin người dùng dựa trên danh sách userIds
+    // Trong ProfileService
+    public PageResponse<UserProfileResponse> getProfiles( int page, int size) {
+        String userId = JwtUtils.getCurrentUserId();
+        Sort sort = Sort.by("firstName").descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        var pageData = userProfileRepository.findAllByUserId(userId, pageable);
+        return PageResponse.<UserProfileResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(pageData.getContent().stream().map(userProfileMapper::toUserProfileResponse).toList())
+                .build();
     }
     // Method to find a user profile by ID
     private UserProfile findUserProfileById(String profileId) {

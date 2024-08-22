@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findAllUserById(String userId, Pageable pageable);
+    Page<Post> findAllByUserId(String userId, Pageable pageable);
 }
