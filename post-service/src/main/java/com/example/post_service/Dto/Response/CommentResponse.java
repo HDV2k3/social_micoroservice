@@ -16,6 +16,7 @@ public class CommentResponse {
     String userId;
     String firstName;
     String lastName;
+    String avatar;
     String content;
     Instant createDate;
     Instant modifiedDate;

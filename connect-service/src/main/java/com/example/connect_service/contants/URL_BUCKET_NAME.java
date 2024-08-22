@@ -1,4 +1,4 @@
-package com.example.post_service.contants;
+package com.example.connect_service.contants;
 
 public class URL_BUCKET_NAME {
     public static final String BUCKET_NAME = "chatappjava-a7ee2.appspot.com";

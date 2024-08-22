@@ -53,6 +53,7 @@ public class PostService {
     ProfileClient profileClient;
     ShareMapper shareMapper;
     FirebaseStorageService firebaseStorageService;
+
     public PageResponse<UserProfileResponse> getUserProfilesWhoLikedPost(String postId, int page, int size) {
         List<String> userIds = likeRepository.findByPostId(postId)
                 .stream()
@@ -129,7 +130,6 @@ public class PostService {
 
         // Gọi profile service để lấy thông tin người dùng với phân trang
         ApiResponse<PageResponse<UserProfileResponse>> profileResponse = profileClient.getProfiles(userIds, page, size);
-
         // Tạo map để ánh xạ userId với thông tin người dùng
         Map<String, UserProfileResponse> userProfileMap = profileResponse.getResult().getData().stream()
                 .collect(Collectors.toMap(UserProfileResponse::getUserId, userProfile -> userProfile));
@@ -145,6 +145,9 @@ public class PostService {
                                 .orElse("Unknown"))
                         .lastName(Optional.ofNullable(userProfileMap.get(comment.getUserId()))
                                 .map(UserProfileResponse::getLastName)
+                                .orElse("Unknown"))
+                        .avatar(Optional.ofNullable(userProfileMap.get(comment.getUserId()))
+                                .map(UserProfileResponse::getAvatar)
                                 .orElse("Unknown"))
                         .content(comment.getContent())
                         .createDate(comment.getCreateDate())
@@ -163,9 +166,6 @@ public class PostService {
 
 
     // Trả về danh sách tất cả các comment của bài viết
-//    public CommentResponse getAllCommentsForPost(String postId) {
-//        return commentRepository.findByPostId(postId);
-//    }
     public PageResponse<PostResponse> getMyPosts(int page, int size) {
         String userId = JwtUtils.getCurrentUserId();
         Sort sort = Sort.by("createdDate").descending();
@@ -195,7 +195,7 @@ public class PostService {
         }
     }
 
-    public void commentOnPost(String postId, CommentRequest request,List<MultipartFile> files) throws IOException {
+    public void commentOnPost(String postId, CommentRequest request, List<MultipartFile> files) throws IOException {
         String userId = JwtUtils.getCurrentUserId();
 
         Optional<Post> post = postRepository.findById(postId);
@@ -223,7 +223,7 @@ public class PostService {
         commentRepository.save(comment);
     }
 
-//    public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
+    //    public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
 //        String userId = JwtUtils.getCurrentUserId();
 //        Post post = Post.builder()
 //                .content(request.getContent())
@@ -234,36 +234,35 @@ public class PostService {
 //        postRepository.save(post);
 //        return postMapper.toPostResponse(post);
 //    }
-public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
-    String userId = JwtUtils.getCurrentUserId();
+    public PostResponse createPost(PostRequest request, List<MultipartFile> files) throws IOException {
+        String userId = JwtUtils.getCurrentUserId();
 
-    // Create a PostImage object if files are provided
-    PostImage postImage = null;
-    if (files != null && !files.isEmpty()) {
-        MultipartFile file = files.getFirst();
-        String storedFileName = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.POST_FOLDER, file);
-        postImage = PostImage.builder()
-                .name(file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown")
-                .type(file.getContentType() != null ? file.getContentType() : "unknown")
-                .urlImagePost(storedFileName)
+        // Create a PostImage object if files are provided
+        PostImage postImage = null;
+        if (files != null && !files.isEmpty()) {
+            MultipartFile file = files.getFirst();
+            String storedFileName = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.POST_FOLDER, file);
+            postImage = PostImage.builder()
+                    .name(file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown")
+                    .type(file.getContentType() != null ? file.getContentType() : "unknown")
+                    .urlImagePost(storedFileName)
+                    .build();
+        }
+
+        Post post = Post.builder()
+                .content(request.getContent())
+                .userId(userId)
+                .createDate(Instant.now())
+                .modifiedDate(Instant.now())
+                .postImage(postImage) // Set the image
+                .likeCount(0L)
+                .shareCount(0L)
+                .commentCount(0L)
                 .build();
+
+        postRepository.save(post);
+        return postMapper.toPostResponse(post);
     }
-
-    Post post = Post.builder()
-            .content(request.getContent())
-            .userId(userId)
-            .createDate(Instant.now())
-            .modifiedDate(Instant.now())
-            .postImage(postImage) // Set the image
-            .likeCount(0L)
-            .shareCount(0L)
-            .commentCount(0L)
-            .build();
-
-    postRepository.save(post);
-    return postMapper.toPostResponse(post);
-}
-
 
 
     public ShareResponse sharePost(String postId) {

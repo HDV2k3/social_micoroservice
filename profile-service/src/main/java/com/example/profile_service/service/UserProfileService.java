@@ -60,23 +60,69 @@ public class UserProfileService {
     public UserProfileResponse getProfileByUserId(String id) {
         UserProfile userProfile =
                 userProfileRepository.findUserByUserId(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
-        return userProfileMapper.toUserProfileResponse(userProfile);
+        log.info("Avatar Name: {}" , userProfile.getAvatar().getUrl());
+        String fullPath = URL_BUCKET_NAME.AVATAR_FOLDER + userProfile.getAvatar().getUrl();
+        String avatarUrl;
+        try {
+            avatarUrl = firebaseStorageService.getSignedUrl(URL_BUCKET_NAME.BUCKET_NAME, fullPath);
+            log.info("Avatar: {}" ,avatarUrl);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+//        return userProfileMapper.toUserProfileResponse(userProfile);
+        return  UserProfileResponse.builder()
+                .userId(id)
+                .firstName(userProfile.getFirstName())
+                .lastName(userProfile.getLastName())
+                .avatar(avatarUrl)
+                .city(userProfile.getCity())
+                .dob(userProfile.getDob())
+                .build();
     }
     // Trả về thông tin người dùng dựa trên danh sách userIds
     // Trong ProfileService
-    public PageResponse<UserProfileResponse> getProfiles( int page, int size) {
+    public PageResponse<UserProfileResponse> getProfiles(int page, int size) {
         String userId = JwtUtils.getCurrentUserId();
         Sort sort = Sort.by("firstName").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        // Fetch user profiles with pagination
         var pageData = userProfileRepository.findAllByUserId(userId, pageable);
+
+        // Map to UserProfileResponse with avatar URL
+        List<UserProfileResponse> profilesWithUrls = pageData.getContent().stream()
+                .map(userProfile -> {
+                    // Create full path for the avatar
+                    String fullPath = URL_BUCKET_NAME.AVATAR_FOLDER + userProfile.getAvatar().getUrl();
+
+                    // Generate signed URL for the avatar
+                    String avatarUrl;
+                    try {
+                        avatarUrl = firebaseStorageService.getSignedUrl(URL_BUCKET_NAME.BUCKET_NAME, fullPath);
+                    } catch (Exception e) {
+                        throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
+                    }
+
+                    // Convert to UserProfileResponse with avatar URL
+                    return UserProfileResponse.builder()
+                            .userId(userProfile.getUserId())
+                            .firstName(userProfile.getFirstName())
+                            .lastName(userProfile.getLastName())
+                            .avatar(avatarUrl) // Set the avatar URL here
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Build and return the PageResponse
         return PageResponse.<UserProfileResponse>builder()
                 .currentPage(page)
                 .pageSize(pageData.getSize())
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(pageData.getContent().stream().map(userProfileMapper::toUserProfileResponse).toList())
+                .data(profilesWithUrls)
                 .build();
     }
+
     // Method to find a user profile by ID
     private UserProfile findUserProfileById(String profileId) {
         return userProfileRepository

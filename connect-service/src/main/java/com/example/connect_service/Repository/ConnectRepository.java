@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ConnectRepository extends MongoRepository<Connect,String> {
-    Optional<Connect> findByUser_IdAndFollowing_Id(String userId, String followingId);
+    Optional<Connect> findByFollowerIdAndFollowingId(String followerId, String followingId);
 
-    List<Connect> findUserById(String userId);
+    List<Connect> findUserById(String followerId);
 }

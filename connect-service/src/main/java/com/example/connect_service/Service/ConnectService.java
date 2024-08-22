@@ -1,6 +1,4 @@
 package com.example.connect_service.Service;
-
-import com.example.connect_service.Dto.ApiResponse;
 import com.example.connect_service.Dto.Request.ConnectRequest;
 import com.example.connect_service.Dto.Response.ConnectResponse;
 import com.example.connect_service.Dto.Response.UserProfileResponse;
@@ -12,14 +10,13 @@ import com.example.connect_service.Mapper.ConnectMapper;
 import com.example.connect_service.Repository.ConnectRepository;
 import com.example.connect_service.Repository.httpclient.ProfileClient;
 import com.example.connect_service.Utils.JwtUtils;
+import com.example.connect_service.contants.URL_BUCKET_NAME;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -31,38 +28,49 @@ public class ConnectService {
     ConnectRepository connectRepository;
     ConnectMapper connectMapper;
     ProfileClient profileClient;
+    FirebaseStorageService firebaseStorageService;
+
     // Kiểm tra xem userId có đang follow followingId hay không
     public boolean existingConnect(String userId, String followingId) {
-        return connectRepository.findByUser_IdAndFollowing_Id(userId, followingId).isPresent();
+        return connectRepository.findByFollowerIdAndFollowingId(userId, followingId).isPresent();
     }
 
-public ConnectResponse createConnect(ConnectRequest request) {
-    String userIdA = JwtUtils.getCurrentUserId();
+    public ConnectResponse createConnect(ConnectRequest request) {
+        String userIdA = JwtUtils.getCurrentUserId();
 
-    // Check if the connection already exists
-    if (existingConnect(userIdA, request.getFollowingId())) {
-        throw new AppException(ErrorCode.ALREADY_EXISTS);
+        // Check if the connection already exists
+        if (existingConnect(userIdA, request.getFollowingId())) {
+            throw new AppException(ErrorCode.ALREADY_EXISTS);
+        }
+
+        // Fetch User A's profile information using ProfileClient
+        UserProfileResponse userProfile = profileClient.getProfile(userIdA);
+
+        // Generate a signed URL for the avatar image
+        // full path to the image in Firebase Storage
+        String fullPath = URL_BUCKET_NAME.AVATAR_FOLDER + userProfile.getAvatar();
+        String avatarUrl;
+        try {
+            avatarUrl = firebaseStorageService.getSignedUrl(URL_BUCKET_NAME.BUCKET_NAME, fullPath);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+        // Create and save the Connect object with profile information
+        Connect newConnect = Connect.builder()
+                .followerId(userIdA)
+                .followingId(request.getFollowingId())
+                .followedAt(Instant.now())
+                .status(ConnectStatus.PENDING)
+                .firstName(userProfile.getFirstName())
+                .lastName(userProfile.getLastName())
+                .avatar(avatarUrl)  // Use the signed URL for the avatar
+                .build();
+
+        Connect savedConnect = connectRepository.save(newConnect);
+
+        // Return a successful response
+        return connectMapper.toConnectCreateResponse(savedConnect);
     }
-
-    // Fetch User A's profile information using ProfileClient
-    UserProfileResponse userProfile = profileClient.getProfile(userIdA);
-
-    // Create and save the Connect object with profile information
-    Connect newConnect = Connect.builder()
-            .followerId(userIdA)
-            .followingId(request.getFollowingId())
-            .followedAt(Instant.now())
-            .status(ConnectStatus.PENDING)
-            .firstName(userProfile.getFirstName())
-            .lastName(userProfile.getLastName())
-            .avatar(userProfile.getAvatar())  // Assuming UserProfileResponse has an avatar field
-            .build();
-
-    Connect savedConnect = connectRepository.save(newConnect);
-
-    // Return a successful response
-    return connectMapper.toConnectCreateResponse(savedConnect);
-}
 
     // Cập nhật trạng thái kết nối
     public ConnectResponse updateConnectStatus(String connectId, ConnectStatus newStatus) {
@@ -82,6 +90,7 @@ public ConnectResponse createConnect(ConnectRequest request) {
                 .map(connectMapper::toConnectCreateResponse)
                 .toList();
     }
+
     public ConnectResponse acceptConnectRequest(String connectId) {
         // Retrieve the connection request by ID
         Connect connect = connectRepository.findById(connectId)

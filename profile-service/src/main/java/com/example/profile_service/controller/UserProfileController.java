@@ -47,38 +47,32 @@ public class UserProfileController {
     }
 
     @PostMapping("/users/{profileId}/avatar")
-    public ResponseEntity<ApiResponse<Void>> uploadAvatarProfile(
-            @PathVariable String userId,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                throw new RuntimeException("File is empty");
-            }
-            userProfileService.uploadAvatarProfile(userId, file);
-            ApiResponse<Void> response = ApiResponse.<Void>builder()
-                    .message("Profile image uploaded successfully")
-                    .code(200)
-                    .build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/users/{profileId}/coverImage")
-    public ResponseEntity<ApiResponse<Void>> uploadCoverImageProfile(
+    public ApiResponse<AvatarProfileResponse> uploadAvatarProfile(
             @PathVariable String profileId,
             @RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
-            userProfileService.uploadCoverImageProfile(profileId, file);
-            ApiResponse<Void> response = ApiResponse.<Void>builder()
-                    .message("Cover image uploaded successfully")
-                    .code(200)
+            return  ApiResponse.<AvatarProfileResponse>builder()
+                    .result(userProfileService.uploadAvatarProfile(profileId, file))
                     .build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/users/{profileId}/coverImage")
+    public ApiResponse<CoverImageResponse> uploadCoverImageProfile(
+            @PathVariable String profileId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                throw new RuntimeException("File is empty");
+            }
+            return ApiResponse.<CoverImageResponse>builder()
+                    .result(  userProfileService.uploadCoverImageProfile(profileId, file))
+                    .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload cover image: " + e.getMessage());
         }

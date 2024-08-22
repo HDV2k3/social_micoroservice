@@ -14,7 +14,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Builder
-@Document(value = "connect")
+@Document(value = "connects")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Connect {
     @MongoId
