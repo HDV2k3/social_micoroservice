@@ -1,6 +1,7 @@
 package com.example.post_service.Dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,24 +13,23 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     @Builder.Default
-    private int code = ApiResponseCode.SUCCESS.getCode(); // Default code
+    private int code = 1000;
 
-    private String message = ApiResponseCode.SUCCESS.getMessage(); // Default message
+    private String message;
     private T result;
-
-    // Optional: Add a static method to create response with predefined codes
-    public static <T> ApiResponse<T> of(ApiResponseCode responseCode, T result) {
+    public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
-                .code(responseCode.getCode())
-                .message(responseCode.getMessage())
-                .result(result)
+                .code(101000)
+                .result(data)
+                .message("Successfully")
                 .build();
     }
 
-    public static <T> ApiResponse<T> of(ApiResponseCode responseCode) {
+    public static <T> ApiResponse<T> error(String errorMessage) {
         return ApiResponse.<T>builder()
-                .code(responseCode.getCode())
-                .message(responseCode.getMessage())
+                .code(101001)
+                .result(null)
+                .message(errorMessage)
                 .build();
     }
 }

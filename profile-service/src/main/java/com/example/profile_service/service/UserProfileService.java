@@ -1,242 +1,30 @@
 package com.example.profile_service.service;
-
-import com.example.profile_service.Utils.JwtUtils;
-import com.example.profile_service.contants.URL_BUCKET_NAME;
 import com.example.profile_service.dto.PageResponse;
 import com.example.profile_service.dto.request.*;
 import com.example.profile_service.dto.response.*;
-import com.example.profile_service.entity.*;
-import com.example.profile_service.exception.AppException;
-import com.example.profile_service.exception.ErrorCode;
-import com.example.profile_service.mapper.*;
-import com.example.profile_service.repository.*;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+public interface UserProfileService {
+    UserProfileResponse createProfile(ProfileCreationRequest request);
 
-@Service
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
-public class UserProfileService {
-    UserProfileRepository userProfileRepository;
-    EducationRepository educationRepository;
-    UserProfileMapper userProfileMapper;
-    FirebaseStorageService firebaseStorageService;
-    AvatarMapper avatarMapper;
-    CoverImageMapper coverImageMapper;
-    EducationMapper educationMapper;
-    IntroductionMapper introductionMapper;
-    SkillMapper skillMapper;
-    SkillRepository skillRepository;
-    IntroductionRepository introductionRepository;
-    ProjectMapper projectMapper;
-    ProjectRepository projectRepository;
-    public UserProfileResponse createProfile(ProfileCreationRequest request) {
-        UserProfile userProfile = userProfileMapper.toUserProfile(request);
-        userProfile = userProfileRepository.save(userProfile);
-        return userProfileMapper.toUserProfileResponse(userProfile);
-    }
+    UserProfileResponse getProfile(String id);
 
-    public UserProfileResponse getProfile(String id) {
-        UserProfile userProfile =
-                userProfileRepository.findById(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
-        return userProfileMapper.toUserProfileResponse(userProfile);
-    }
-    public UserProfileResponse getProfileByUserId(String id) {
-        UserProfile userProfile =
-                userProfileRepository.findUserByUserId(id) .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
-        log.info("Avatar Name: {}" , userProfile.getAvatar().getUrl());
-        String fullPath = URL_BUCKET_NAME.AVATAR_FOLDER + userProfile.getAvatar().getUrl();
-        String avatarUrl;
-        try {
-            avatarUrl = firebaseStorageService.getSignedUrl(URL_BUCKET_NAME.BUCKET_NAME, fullPath);
-            log.info("Avatar: {}" ,avatarUrl);
-        } catch (Exception e) {
-            throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
-        }
-//        return userProfileMapper.toUserProfileResponse(userProfile);
-        return  UserProfileResponse.builder()
-                .userId(id)
-                .firstName(userProfile.getFirstName())
-                .lastName(userProfile.getLastName())
-                .avatar(avatarUrl)
-                .city(userProfile.getCity())
-                .dob(userProfile.getDob())
-                .build();
-    }
-    // Trả về thông tin người dùng dựa trên danh sách userIds
-    // Trong ProfileService
-    public PageResponse<UserProfileResponse> getProfiles(int page, int size) {
-        String userId = JwtUtils.getCurrentUserId();
-        Sort sort = Sort.by("firstName").descending();
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+    UserProfileResponse getProfileByUserId(String id);
 
-        // Fetch user profiles with pagination
-        var pageData = userProfileRepository.findAllByUserId(userId, pageable);
+    PageResponse<UserProfileResponse> getProfiles(int page, int size);
 
-        // Map to UserProfileResponse with avatar URL
-        List<UserProfileResponse> profilesWithUrls = pageData.getContent().stream()
-                .map(userProfile -> {
-                    // Create full path for the avatar
-                    String fullPath = URL_BUCKET_NAME.AVATAR_FOLDER + userProfile.getAvatar().getUrl();
+    AvatarProfileResponse uploadAvatarProfile(String profileId, MultipartFile file) throws IOException;
 
-                    // Generate signed URL for the avatar
-                    String avatarUrl;
-                    try {
-                        avatarUrl = firebaseStorageService.getSignedUrl(URL_BUCKET_NAME.BUCKET_NAME, fullPath);
-                    } catch (Exception e) {
-                        throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
-                    }
+    CoverImageResponse uploadCoverImageProfile(String profileId, MultipartFile file) throws IOException;
 
-                    // Convert to UserProfileResponse with avatar URL
-                    return UserProfileResponse.builder()
-                            .userId(userProfile.getUserId())
-                            .firstName(userProfile.getFirstName())
-                            .lastName(userProfile.getLastName())
-                            .avatar(avatarUrl) // Set the avatar URL here
-                            .build();
-                })
-                .collect(Collectors.toList());
+    EducationResponse createEducation(EducationRequest request, String profileId);
 
-        // Build and return the PageResponse
-        return PageResponse.<UserProfileResponse>builder()
-                .currentPage(page)
-                .pageSize(pageData.getSize())
-                .totalPages(pageData.getTotalPages())
-                .totalElements(pageData.getTotalElements())
-                .data(profilesWithUrls)
-                .build();
-    }
+    IntroductionResponse createIntroduction(IntroductionRequest request, String profileId);
 
-    // Method to find a user profile by ID
-    private UserProfile findUserProfileById(String profileId) {
-        return userProfileRepository
-                .findById(profileId)
-                .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
-    }
-    public AvatarProfileResponse uploadAvatarProfile(String profileId, MultipartFile file) throws IOException {
-        // Find the user profile
-        UserProfile userProfile = findUserProfileById(profileId);
+    SkillResponse createSkill(SkillRequest request, String profileId);
 
-        // Upload the avatar to Firebase and get the URL
-        String imageUrl = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.AVATAR_FOLDER, file);
+    ProjectResponse createProject(ProjectRequest request, String profileId);
 
-        // Create a new Avatar entity
-        Avatar avatar = new Avatar();
-        avatar.setName(file.getOriginalFilename());
-        avatar.setType(file.getContentType());
-        avatar.setUrl(imageUrl);
-
-        // Associate the avatar with the user profile
-        userProfile.setAvatar(avatar);
-
-        // Save the updated user profile
-        userProfileRepository.save(userProfile);
-
-        // Use the mapper to convert the Avatar entity to AvatarProfileResponse DTO
-       return avatarMapper.toAvatarProfileResponse(avatar);
-    }
-    public CoverImageResponse uploadCoverImageProfile(String profileId, MultipartFile file) throws IOException {
-        UserProfile userProfile = findUserProfileById(profileId);
-
-        String imageUrl = firebaseStorageService.uploadFile(URL_BUCKET_NAME.BUCKET_NAME, URL_BUCKET_NAME.COVER_IMAGE_FOLDER, file);
-
-        CoverImage coverImage =new CoverImage();
-        coverImage.setName(file.getOriginalFilename());
-        coverImage.setType(file.getContentType());
-        coverImage.setUrl(imageUrl);
-
-        userProfile.setCoverImage(coverImage);
-
-        userProfileRepository.save(userProfile);
-
-       return coverImageMapper.toCoverImageProfileResponse(coverImage);
-
-    }
-    public EducationResponse createEducation(EducationRequest request,String profileId)
-    {
-        UserProfile userProfile = findUserProfileById(profileId);
-
-        Education education = educationMapper.toEducationProfile(request);
-        userProfile.setEducation(education);
-        userProfileRepository.save(userProfile);
-        education = educationRepository.save(education);
-        return educationMapper.toEducationProfileResponse(education);
-    }
-
-    public IntroductionResponse createIntroduction(IntroductionRequest request,String profileId)
-    {
-        UserProfile userProfile = findUserProfileById(profileId);
-        Introduction introduction = introductionMapper.toProfileIntroduction(request);
-        userProfile.setIntroduction(introduction);
-        userProfileRepository.save(userProfile);
-        introduction = introductionRepository.save(introduction);
-        return  introductionMapper.toProfileIntroductionResponse(introduction);
-    }
-    public SkillResponse createSkill(SkillRequest request,String profileId)
-    {
-        UserProfile userProfile = findUserProfileById(profileId);
-        Skill skill = skillMapper.toSkillProfile(request);
-        // Thêm kỹ năng vào tập hợp kỹ năng của UserProfile
-        userProfile.getSkills().add(skill);
-        // Lưu UserProfile và tạo mối quan hệ HAS_SKILL
-        userProfileRepository.save(userProfile);
-
-        skill =skillRepository.save(skill);
-        // Tạo SkillResponse và trả về
-        return SkillResponse.builder()
-                .id(skill.getId())
-                .skill(skill.getSkill())
-                .ProfileId(userProfile.getId()) // Đặt ProfileId
-                .build();
-    }
-    public ProjectResponse createProject(ProjectRequest request, String profileId) {
-        // Tạo một Project từ request
-        Project project = projectMapper.toProfileProject(request);
-
-        // Duyệt qua danh sách participantIds để tìm và thêm UserProfile vào project
-        Set<UserProfile> participants = request.getParticipantIds().stream()
-                .map(userId -> userProfileRepository.findById(userId)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)))
-                .collect(Collectors.toSet());
-
-        // Cập nhật mối quan hệ giữa Project và các UserProfile
-        project.setParticipants(participants);
-
-        // Cập nhật các UserProfile để thiết lập mối quan hệ INVOLVES với Project
-        for (UserProfile participant : participants) {
-            participant.getProjects().add(project);
-            userProfileRepository.save(participant);  // Lưu lại UserProfile với mối quan hệ mới
-        }
-
-        // Lưu Project vào cơ sở dữ liệu
-        project = projectRepository.save(project);
-
-        // Chuyển đổi Project thành ProjectResponse và trả về
-        return projectMapper.toProfileProjectResponse(project);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<UserProfileResponse> getAllProfiles() {
-        List<UserProfile> userProfiles = userProfileRepository.findAll();
-        return userProfiles.stream()
-                .map(userProfileMapper::toUserProfileResponse)
-                .collect(Collectors.toList());
-    }
-
+    List<UserProfileResponse> getAllProfiles();
 }

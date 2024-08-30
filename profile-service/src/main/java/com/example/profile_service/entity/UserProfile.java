@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.neo4j.core.schema.*;
 import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class UserProfile {
     String city;
     String address;
     String number;
-
+    Instant createAt;
     @Relationship(type = "HAS_AVATAR")
     Avatar avatar;
 

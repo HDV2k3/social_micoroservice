@@ -1,7 +1,7 @@
 package com.example.profile_service.exception;
 
 
-import com.example.profile_service.dto.request.ApiResponse;
+import com.example.profile_service.dto.ApiResponse;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

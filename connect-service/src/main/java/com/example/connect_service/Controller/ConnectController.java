@@ -1,18 +1,15 @@
 package com.example.connect_service.Controller;
-
 import com.example.connect_service.Dto.ApiResponse;
 import com.example.connect_service.Dto.ConnectResponseRequest;
 import com.example.connect_service.Dto.Request.ConnectRequest;
 import com.example.connect_service.Dto.Response.ConnectResponse;
-import com.example.connect_service.Service.ConnectService;
+import com.example.connect_service.Facade.ConnectFacade;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -20,33 +17,35 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ConnectController {
 
-    ConnectService connectService;
+    ConnectFacade connectFacade;
 
     @PostMapping("/create-connect")
     ApiResponse<ConnectResponse> createConnect(@RequestBody ConnectRequest request) {
-        return ApiResponse.<ConnectResponse>builder()
-                .result(connectService.createConnect(request))
-                .build();
+      var result = connectFacade.createConnect(request);
+      return ApiResponse.success(result);
     }
 
     @PutMapping("/response-connect")
     ApiResponse<ConnectResponse> respondToConnect(@RequestBody ConnectResponseRequest request) {
-        return ApiResponse.<ConnectResponse>builder()
-                .result(connectService.updateConnectStatus(request.getConnectId(), request.getStatus()))
-                .build();
+       var result = connectFacade.updateConnectStatus(request.getConnectId(),request.getStatus());
+       return ApiResponse.success(result);
     }
 
     @GetMapping("/lists-request-connect")
     ApiResponse<List<ConnectResponse>> myConnects() {
-        return ApiResponse.<List<ConnectResponse>>builder()
-                .result(connectService.getMyConnects())
-                .build();
+        var result = connectFacade.getMyConnects();
+        return ApiResponse.success(result);
+//        return ApiResponse.<List<ConnectResponse>>builder()
+//                .result(connectService.getMyConnects())
+//                .build();
     }
 
     @PostMapping("/{connectId}/accept")
     ApiResponse<ConnectResponse> acceptConnectRequest(@PathVariable String connectId) {
-        return ApiResponse.<ConnectResponse>builder()
-                .result(connectService.acceptConnectRequest(connectId))
-                .build();
+        var result = connectFacade.acceptConnectRequest(connectId);
+        return ApiResponse.success(result);
+//        return ApiResponse.<ConnectResponse>builder()
+//                .result(connectService.acceptConnectRequest(connectId))
+//                .build();
     }
 }

@@ -25,7 +25,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
-import com.example.identity_service.service.CustomUserDetailsService;
+import com.example.identity_service.service.ServiceImpl.CustomUserDetailsService;
 import com.example.identity_service.validator.CustomAuthenticationProvider;
 import com.example.identity_service.validator.DifferentLocationChecker;
 import com.maxmind.geoip2.DatabaseReader;

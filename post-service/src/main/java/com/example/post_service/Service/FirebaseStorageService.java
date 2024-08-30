@@ -30,17 +30,6 @@ public class FirebaseStorageService {
 
         return fileName; // Chỉ trả về tên file, không bao gồm đường dẫn thư mục
     }
-    public String getSignedUrl(String bucketName, String filePath) throws IOException {
-        Storage storage = StorageClient.getInstance().bucket(bucketName).getStorage();
-        BlobId blobId = BlobId.of(bucketName, filePath);
-        Blob blob = storage.get(blobId);
-
-        if (blob == null || !blob.exists()) {
-
-            throw new AppException(ErrorCode.IMAGE_NOT_FOUND);
-        }
-        return blob.signUrl(1, TimeUnit.HOURS).toString();
-    }
     private String generateFileName(String originalFileName) {
         return UUID.randomUUID().toString() + "_" + originalFileName;
     }

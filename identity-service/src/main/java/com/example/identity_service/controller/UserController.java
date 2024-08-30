@@ -3,18 +3,18 @@ package com.example.identity_service.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.example.identity_service.facade.UserFacade;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.example.identity_service.dto.request.ApiResponse;
+import com.example.identity_service.dto.ApiResponse;
 import com.example.identity_service.dto.request.AuthenticationRequest;
 import com.example.identity_service.dto.request.UserCreationRequest;
 import com.example.identity_service.dto.request.UserUpdateRequest;
 import com.example.identity_service.dto.response.UserResponse;
 import com.example.identity_service.service.UserService;
-import com.example.identity_service.service.VerificationTokenService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,71 +27,58 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class UserController {
-    UserService userService;
+    UserFacade userFacade;
     @PostMapping("/register")
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.createUser(request))
-                .build();
+     var result = userFacade.createUser(request);
+     return ApiResponse.success(result);
     }
 
     @PostMapping("/login")
-    public ApiResponse<Map<String, String>> login(@RequestBody AuthenticationRequest request) {
-        try {
-            Map<String, String> response = userService.login(request);
-            return ApiResponse.<Map<String, String>>builder().result(response).build();
-        } catch (MessagingException e) {
-            return ApiResponse.<Map<String, String>>builder().build();
-        }
+    public ApiResponse<Map<String, String>> login(@RequestBody AuthenticationRequest request) throws MessagingException {
+        var result = userFacade.login(request);
+        return ApiResponse.success(result);
     }
 
     @PostMapping("/verify-email")
     public ApiResponse<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
-        Map<String, Object> response = userService.verifyEmail(token);
-        if (response.containsKey("email")) {
-            return ApiResponse.<Map<String, Object>>builder().result(response).build();
-        } else {
-            return ApiResponse.<Map<String, Object>>builder().build();
-        }
+        var result = userFacade.verifyEmail(token);
+        return ApiResponse.success(result);
     }
 
     @PostMapping("/resend-verification")
     public ApiResponse<String> resendVerification(@RequestParam("token") String token) {
-        String message = userService.resendVerification(token);
-        return ApiResponse.<String>builder().result(message).build();
+        var result = userFacade.resendVerification(token);
+        return ApiResponse.success(result);
     }
 
     @GetMapping
     ApiResponse<List<UserResponse>> getUsers() {
-        return ApiResponse.<List<UserResponse>>builder()
-                .result(userService.getUsers())
-                .build();
+        var result = userFacade.getUsers();
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/{userId}")
     ApiResponse<UserResponse> getUser(@PathVariable("userId") String userId) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getUser(userId))
-                .build();
+        var result = userFacade.getUser(userId);
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/my-info")
     ApiResponse<UserResponse> getMyInfo() {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getMyInfo())
-                .build();
+        var result = userFacade.getMyInfo();
+        return ApiResponse.success(result);
     }
 
     @DeleteMapping("/{userId}")
     ApiResponse<String> deleteUser(@PathVariable String userId) {
-        userService.deleteUser(userId);
-        return ApiResponse.<String>builder().result("User has been deleted").build();
+        var result = userFacade.deleteUser(userId);
+        return ApiResponse.success(result);
     }
 
     @PutMapping("/{userId}")
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.updateUser(userId, request))
-                .build();
+        var result = userFacade.updateUser(userId,request);
+        return ApiResponse.success(result);
     }
 }

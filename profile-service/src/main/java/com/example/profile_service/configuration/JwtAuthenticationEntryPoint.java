@@ -1,7 +1,7 @@
 package com.example.profile_service.configuration;
 
 
-import com.example.profile_service.dto.request.ApiResponse;
+import com.example.profile_service.dto.ApiResponse;
 import com.example.profile_service.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
